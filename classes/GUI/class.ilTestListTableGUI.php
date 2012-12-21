@@ -38,8 +38,11 @@ class ilTestListTableGUI
 
 		$this->setDefaultOrderDirection('ASC');
 		$this->setDefaultOrderField('title');
+		
+		// ext ordering with db is ok, but ext limiting with db is not possible,
+		// since the rbac filtering is downstream to the db query
 		$this->setExternalSorting(true);
-		$this->setExternalSegmentation(true);
+		$this->setExternalSegmentation(false);
 
         parent::__construct($a_parent_obj, $a_parent_cmd);
 

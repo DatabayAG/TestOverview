@@ -65,18 +65,35 @@ abstract class ilMappedTableGUI
 	 *	method should be overloaded to handle specific
 	 *	cases of displaying or ordering rows.
 	 *
-	 *	@return ilTestOverviewTableGUI
+	 *	@return ilMappedTableGUI
 	 */
 	public function populate()
     {
-        $this->determineOffsetAndOrder();
-
+		if( $this->getExternalSegmentation() && $this->getExternalSorting() )
+		{
+			$this->determineOffsetAndOrder();
+		}
+		elseif( !$this->getExternalSegmentation() && $this->getExternalSorting() )
+		{
+			$this->determineOffsetAndOrder(true);
+		}
+		else
+		{
+			throw new ilException('invalid table configuration: extSort=false / extSegm=true');
+		}
+		
 		/* Configure query execution */
-		$params = array(
-			"limit"			=> $this->getLimit(),
-			"offset"		=> $this->getOffset(),
-			"order_field"	=> $this->getOrderField(),
-			"order_direction" => $this->getOrderDirection(),);
+		$params = array();
+		if( $this->getExternalSegmentation() )
+		{
+			$params['limit'] = $this->getLimit();
+			$params['offset'] = $this->getOffset();
+		}
+		if( $this->getExternalSorting() )
+		{
+			$params['order_field'] = $this->getOrderField();
+			$params['order_direction'] = $this->getOrderDirection();
+		}
 
 		$overview = $this->getParentObject()->object;
 		$filters  = array("overview_id" => $overview->getId()) + $this->filter;
@@ -97,8 +114,12 @@ abstract class ilMappedTableGUI
 		$data = $this->formatData($data);
 
 		$this->setData($data['items']);
-        $this->setMaxCount($data['cnt']);
-
+		
+ 		if( $this->getExternalSegmentation() )
+		{
+			$this->setMaxCount($data['cnt']);
+		}
+		
         return $this;
     }
 

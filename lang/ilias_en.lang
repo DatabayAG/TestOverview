@@ -1,0 +1,56 @@
+<!-- language file start -->
+obj_xtov#:#Test Overview
+objs_xtov#:#Test Overview
+obj_xtov_duplicate#:#Copy
+objs_xtov_duplicate#:#Copy Test Overviews
+xtov_add#:#Add Test Overview
+xtov_new#:#Add Test Overview
+xtov_visible#:#Visible: Test Overview is visible
+xtov_read#:#Read: Read access to Test Overview
+xtov_write#:#Edit Settings: Edit Test Overview
+xtov_delete#:#Delete: Delete Test Overview
+xtov_edit_permission#:#Change Permissions: Change permission settings
+crs_create_xtov#:#Create Test Overview
+grp_create_xtov#:#Create Test Overview
+fold_create_xtov#:#Create Test Overview
+root_create_xtov#:#Create Test Overview
+cat_create_xtov#:#Create Test Overview
+content#:#Content
+properties#:#Settings
+edit_properties#:#Edit Settings
+title#:#Title
+description#:#Description
+save#:#Save
+cancel#:#Cancel
+edit#:#Edit
+config_test_overview#:#Configure Test Overview
+test_overview_table_title#:#Test Overview '%s'
+test_list_table_title#:#Tests to accumulate in overview '%s'
+test_list_description#:#Please select the tests you want to add to this overview. 
+test_list_hdr_test_title#:#Title
+test_list_hdr_test_info#:#Path to Test
+add_to_overview#:#Add to Overview
+remove_from_overview#:#Remove
+add_to_overview_as_filter#:#Add to Overview as Filter
+item_chosen#:#Chosen
+membership_list_table_title#:#Group/Courses Filter
+membership_list_description#:#Please select certain groups or courses the test participants have to be member off.
+membership_list_hdr_membership_title#:#Title
+membership_list_hdr_membership_info#:#Additional Information
+memberships_updated_success#:#Updated successfully.
+min_one_check_membership#:#Please select at least one group or course.
+tests_updated_success#:#Updated successfully.
+min_one_check_test#:#Please select at least one test.
+test_overview_hdr_user#:#Participant
+test_overview_hdr_avg#:#Average
+test_overview_description#:#This table shows test results of participants, filtered by certain group or course memberships.
+overview_test_not_passed#:#Not passed
+overview_avg_not_available#:#Not available
+overview_flt_participant_name#:#Participant
+overview_flt_group_name#:#Membership
+test_list_flt_tst_name#:#Name
+membership_list_flt_grp_name#:#Name
+overview_result_not_authorized#:#Not authorized
+membership_count_members#:#Members
+copy#:#Copy
+

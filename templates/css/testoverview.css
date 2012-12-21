@@ -1,0 +1,26 @@
+.result-col {
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;
+}
+
+.no-result {
+	background: #999;
+	color: #000;
+}
+
+.red-result {
+	background: #f00;
+	color: #fff;
+}
+
+.orange-result {
+	background: #c30;
+	color: #fff;
+}
+
+.green-result {
+	background: #0c0;
+	color: #000;
+}

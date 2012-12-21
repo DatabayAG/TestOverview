@@ -1,0 +1,56 @@
+<!-- language file start -->
+obj_xtov#:#Testübersicht
+objs_xtov#:#Testübersicht-Objekte
+obj_xtov_duplicate#:#Testübersicht kopieren
+objs_xtov_duplicate#:#Testübersicht-Objekte kopieren
+xtov_add#:#Neue Testübersicht anlegen
+xtov_new#:#Neue Testübersicht anlegen
+xtov_visible#:#Anzeigen: Testübersicht ist sichtbar
+xtov_read#:#Lesezugriff: Lesezugriff auf Testübersicht
+xtov_write#:#Einstellungen bearbeiten: Testübersicht bearbeiten
+xtov_delete#:#Löschen: Testübersicht löschen
+xtov_edit_permission#:#Rechteeinstellungen ändern: Rechteeinstellungen ändern
+crs_create_xtov#:#Neue Testübersicht anlegen
+grp_create_xtov#:#Neue Testübersicht anlegen
+fold_create_xtov#:#Neue Testübersicht anlegen
+root_create_xtov#:#Neue Testübersicht anlegen
+cat_create_xtov#:#Neue Testübersicht anlegen
+content#:#Inhalt
+properties#:#Einstellungen
+edit_properties#:#Einstellungen Bearbeiten
+title#:#Titel
+description#:#Beschreibung
+save#:#Speichern
+cancel#:#Abbrechen
+edit#:#Bearbeiten
+config_test_overview#:#Testübersicht Einstellen
+test_overview_table_title#:#Testübersicht '%s'
+test_list_table_title#:#Zu akkumulierende Tests für die Testübersicht '%s'
+test_list_description#:#Wählen Sie aus, welche Tests in der Inhaltsansicht dieses Objekts akkumuliert werden sollen. Es stehen nur jene Tests zur Verfügung, bei denen Sie das Recht besitzen, die Teststatistiken einzusehen. 
+test_list_hdr_test_title#:#Titel
+test_list_hdr_test_info#:#Pfad zum Test
+add_to_overview#:#Für Übersicht auswählen
+remove_from_overview#:#Auswahl aufheben
+add_to_overview_as_filter#:#Für Übersicht als Filter auswählen
+item_chosen#:#Ausgewählt
+membership_list_table_title#:#Gruppen-/Kursfilter
+membership_list_description#:#Wählen Sie hier bitte Gruppen- oder Kurs-Objekte aus, in denen die Testteilnehmer Mitglied sein müssen, damit sie in der Statistik berücksichtigt werden. Es werden nur jene Objekte angezeigt, bei denen Sie selber Mitglied einer lokalen Rolle sind.
+membership_list_hdr_membership_title#:#Titel
+membership_list_hdr_membership_info#:#Zusätzliche Informationen
+memberships_updated_success#:#Die Einstellungen wurden erfolgreich aktualisiert.
+min_one_check_membership#:#Bitte wählen Sie mindestens ein Gruppen- oder Kurs-Objekt aus.
+tests_updated_success#:#Die Einstellungen wurden erfolgreich aktualisiert.
+min_one_check_test#:#Bitte wählen Sie mindestens einen Test.
+test_overview_hdr_user#:#Teilnehmer
+test_overview_hdr_avg#:#Durchschnitt
+test_overview_description#:#Diese Tabelle zeigt Teilnehmerergebnisse von vorgegebenen Tests, gefiltert nach ausgewählten Gruppen- oder Kursmitgliedschaften der Teilnehmer.
+overview_test_not_passed#:#Nicht teilgenommen
+overview_avg_not_available#:#Nicht verfügbar
+overview_flt_participant_name#:#Teilnehmer
+overview_flt_group_name#:#Mitgliedschaft
+test_list_flt_tst_name#:#Name
+membership_list_flt_grp_name#:#Name
+overview_result_not_authorized#:#Keine Berechtigung
+membership_count_members#:#Mitglieder
+copy#:#Kopieren
+

@@ -11,9 +11,10 @@
 require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
 				->getDirectory() . '/classes/GUI/class.ilMappedTableGUI.php';
 
-class ilTestListTableGUI
-	extends ilMappedTableGUI
+class ilTestListTableGUI extends ilMappedTableGUI
 {
+	const DO_RBAC_CHECK = true;
+	
 	/**
 	 *	 @var	array
 	 */
@@ -95,16 +96,16 @@ class ilTestListTableGUI
 	 *	This method is called internally by ilias to
 	 *	fill a table row according to the row template.
 	 *
-     *	@param ilObjTest $test
+     *	@param stdClass $item
      */
-    protected function fillRow(ilObjTest $test)
+    protected function fillRow(stdClass $item)
     {
 		/* Configure template rendering. */
 		$this->tpl->setVariable('VAL_CHECKBOX',
-				ilUtil::formCheckbox(false, 'test_ids[]', $test->getRefId()));
-		$this->tpl->setVariable('OBJECT_TITLE', $test->getTitle());
-		$this->tpl->setVariable('OBJECT_INFO', $this->getTestPath($test));
-		$this->tpl->setVariable('OBJECT_STAUTS_IMG_PATH', $this->isAddedTest($test) ? ilUtil::getImagePath('icon_ok.png') : ilUtil::getImagePath('icon_not_ok.png'));
+				ilUtil::formCheckbox(false, 'test_ids[]', $item->ref_id));
+		$this->tpl->setVariable('OBJECT_TITLE', $item->title);
+		$this->tpl->setVariable('OBJECT_INFO', $this->getTestPath($item));
+		$this->tpl->setVariable('OBJECT_STAUTS_IMG_PATH', $this->isAddedTest($item) ? ilUtil::getImagePath('icon_ok.png') : ilUtil::getImagePath('icon_not_ok.png'));
     }
 
 	/**
@@ -127,17 +128,13 @@ class ilTestListTableGUI
 			'items'	=> array(),
 			'cnt'	=> 0,);
 
-		foreach ($data['items'] as $item) {
-			$test = ilObjectFactory::getInstanceByRefId($item->ref_id, false);
-			if ($test === false)
-				throw new OutOfRangeException;
-
+		foreach ($data['items'] as $item)
+		{
 			/* Check access permissions. */
-			if ( $ilAccess->checkAccess("tst_statistics", "", $test->getRefId())
-				 || $ilAccess->checkAccess("write", "", $test->getRefId()) )
-				$formatted['items'][] = $test;
+			if ( !self::DO_RBAC_CHECK || $ilAccess->checkAccess("tst_statistics", "", $item->ref_id)
+				 || $ilAccess->checkAccess("write", "", $item->ref_id) )
+				$formatted['items'][] = $item;
 		}
-		// @todo: Greg, you have to adjust the max count value because of the filter above.
 		$formatted['cnt'] = $data['cnt'];
 
 		return $formatted;
@@ -150,10 +147,10 @@ class ilTestListTableGUI
 	 *	an ilObjTest object has been added to the current
 	 *	overview already or not.
 	 *
-	 *	@params	ilObjTest	$test
+	 *	@params	stdClass	$test
 	 *	@return boolean
 	 */
-	private function isAddedTest( ilObjTest $test )
+	private function isAddedTest( stdClass $item )
 	{
 		/**
 		 * @var $ilDB ilDB
@@ -164,7 +161,8 @@ class ilTestListTableGUI
 						   ->object->getId();
 		$filter = array(
 			"obj_id_overview = " . $ilDB->quote($overviewId, 'integer'),
-			"ref_id_test = " . $ilDB->quote($test->getRefId(), 'integer'),);
+			"ref_id_test = " . $ilDB->quote($item->ref_id, 'integer')
+		);
 
 		$res = $this->getMapper()
 	 		  	    ->getValue( "rep_robj_xtov_t2o", "TRUE", $filter );
@@ -178,10 +176,10 @@ class ilTestListTableGUI
 	 *	retrieve the full path to a test node in the
 	 *	ilias tree.
 	 *
-	 *	@params	ilObjTest	$test
+	 *	@params	stdClass	$item
 	 *	@return string
 	 */
-	private function getTestPath( ilObjTest $test )
+	private function getTestPath( stdClass $item )
 	{
 		/**
 		 * @var $tree ilTree
@@ -190,7 +188,7 @@ class ilTestListTableGUI
 		
 		$path_str = '';
 
-		$path = $tree->getNodePath($test->getRefId());
+		$path = $tree->getNodePath($item->ref_id);
 		while ($node = current($path)) {
 			$prepend  = empty($path_str) ? '' : "{$path_str} > ";
 			$path_str = $prepend . $node['title'];

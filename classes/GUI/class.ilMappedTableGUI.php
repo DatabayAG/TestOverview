@@ -131,24 +131,24 @@ abstract class ilMappedTableGUI
 	 *	the getMembersObject method is implemented only
 	 *	in ilObjCourse.
 	 *
-	 *	@params	ilContainer	$container	The container object
+	 *	@params	stdClass	$container	The container object
 	 *	@return ilParticipants|ilGroupParticipants|ilCourseParticipants
 	 */
-	protected function getGroupObject( ilContainer $container )
+	protected function getMembersObject( stdClass $container )
 	{
-		switch (get_class($container)) {
+		switch ($container->type) {
 
-			case "ilObjGroup":
+			case "grp":
 				include_once 'Modules/Group/classes/class.ilGroupParticipants.php';
-				return new ilGroupParticipants( $container->getId() );
+				return new ilGroupParticipants( $container->obj_id );
 
-			case "ilObjCourse":
+			case "crs":
 				include_once 'Modules/Course/classes/class.ilCourseParticipants.php';
-				return new ilCourseParticipants( $container->getId() );
+				return new ilCourseParticipants( $container->obj_id );
 
 			default :
 				include_once 'Services/Membership/classes/class.ilParticipants.php';
-				return new ilParticipants( $container->getId() );
+				return new ilParticipants( $container->obj_id );
 		}
 	}
 }

@@ -97,20 +97,18 @@ class ilMembershipListTableGUI
 	 *
 	 *	@throws InvalidArgumentException	on invalid $group parameter
      */
-    protected function fillRow(stdClass $group)
+    protected function fillRow(stdClass $container)
 	{
-		/* Load *Participants object */
-		$container = ilObjectFactory::getInstanceByObjId($group->obj_id, false);
-		$members   = $this->getGroupObject($container)
+		$members   = $this->getMembersObject($container)
 						  ->getCountMembers();
 		$label     = $this->lng->txt("rep_robj_xtov_membership_count_members");
 
 		/* Configure template rendering */
 		$this->tpl->setVariable('VAL_CHECKBOX',
-				ilUtil::formCheckbox( false, 'membership_ids[]', $group->obj_id ));
-		$this->tpl->setVariable('OBJECT_TITLE', $group->title);
+				ilUtil::formCheckbox( false, 'membership_ids[]', $container->obj_id ));
+		$this->tpl->setVariable('OBJECT_TITLE', $container->title);
 		$this->tpl->setVariable('OBJECT_INFO', sprintf("%d %s", $members, $label));
-		$this->tpl->setVariable('OBJECT_STAUTS_IMG_PATH', $this->isAddedGroup($group) ? ilUtil::getImagePath('icon_ok.png') : ilUtil::getImagePath('icon_not_ok.png')); 
+		$this->tpl->setVariable('OBJECT_STAUTS_IMG_PATH', $this->isAddedContainer($container) ? ilUtil::getImagePath('icon_ok.png') : ilUtil::getImagePath('icon_not_ok.png')); 
     }
 
 	/**
@@ -120,10 +118,10 @@ class ilMembershipListTableGUI
 	 *	wether a participant group is added to the current
 	 *	overview already or not.
 	 *
-	 *	@params	stdClass	$group
+	 *	@params	stdClass	$container
 	 *	@return boolean
 	 */
-	private function isAddedGroup( stdClass $group )
+	private function isAddedContainer( stdClass $container )
 	{
 		global $ilDB;
 
@@ -131,7 +129,7 @@ class ilMembershipListTableGUI
 						   ->object->getId();
 		$filter = array(
 			"obj_id_overview = " . $ilDB->quote($overviewId, 'integer'),
-			"obj_id_grpcrs = " . $ilDB->quote($group->obj_id, 'integer'),);
+			"obj_id_grpcrs = " . $ilDB->quote($container->obj_id, 'integer'),);
 
 		$res = $this->getMapper()
 	 		        ->getValue( "rep_robj_xtov_p2o", "TRUE", $filter );

@@ -3,6 +3,8 @@
     -webkit-border-radius: 20px;
     -khtml-border-radius: 20px;
     border-radius: 20px;
+	
+	vertical-align: middle;
 }
 
 .no-result {
@@ -23,4 +25,9 @@
 .green-result {
 	background: #0c0;
 	color: #000;
+}
+
+.no-perm-result {
+	background: #ddd;
+	color: #aaa;
 }

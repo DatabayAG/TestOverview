@@ -449,22 +449,23 @@ class ilObjTestOverviewGUI
 		$this->initSettingsForm();
 		$this->populateSettings();
 
-		if (isset($_POST['membership_ids'])) {
+		if (isset($_POST['membership_ids']))
+		{
 			/* Executing the registered test retrieval again with the same filters
 			   allows to determine which tests are really removed. */
 			include_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
 				->getDirectory() . "/classes/mapper/class.ilMembershipMapper.php";
 
-			foreach ($_POST['membership_ids'] as $groupId) {
-				$this->object
-					->rmGroup( $groupId );
+			foreach ($_POST['membership_ids'] as $containerId)
+			{
+				$this->object->rmGroup($containerId);
 			}
 
 			ilUtil::sendSuccess($lng->txt('rep_robj_xtov_memberships_updated_success'), true);
 			$ilCtrl->redirect($this, 'editSettings');
 		}
 		
-		ilUtil::sendFailure($lng->txt('rep_robj_xtov_min_one_check_membership'), true);
+		ilUtil::sendFailure($lng->txt('rep_robj_xtov_min_one_check_membership'));
 		$tpl->setContent( $this->renderSettings() );
 	}
 

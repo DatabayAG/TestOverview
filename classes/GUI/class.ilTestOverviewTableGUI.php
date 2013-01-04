@@ -15,6 +15,8 @@ require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'T
 class ilTestOverviewTableGUI
 	extends ilMappedTableGUI
 {
+	private $accessIndex = array();
+	
 	/**
 	 *	 @var	array
 	 */
@@ -31,7 +33,7 @@ class ilTestOverviewTableGUI
 		/**
 		 *	@var ilCtrl	$ilCtrl
 		 */
-		global $ilCtrl, $tpl;
+		global $ilCtrl, $tpl, $ilAccess;
 
 		/* Pre-configure table */
 		$this->setId(sprintf(
@@ -54,9 +56,26 @@ class ilTestOverviewTableGUI
 		$overview = $this->getParentObject()->object;
 
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_user'));
-		foreach ($overview->getTests() as $test) {
-			$this->addColumn($test->getTitle());
+		
+		foreach( $overview->getUniqueTests() as $obj_id => $refs )
+		{
+			$this->accessIndex[$obj_id] = false;
+			
+			foreach( $refs as $ref_id )
+			{
+				switch( true )
+				{
+					case $ilAccess->checkAccess("tst_statistics", "", $ref_id):
+					case $ilAccess->checkAccess("write", "", $ref_id):
+					
+						$this->accessIndex[$obj_id] = true;
+						break 2;
+				}
+			}
+
+			$this->addColumn( $overview->getTest($obj_id)->getTitle() );
 		}
+		
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
@@ -118,8 +137,6 @@ class ilTestOverviewTableGUI
      */
     protected function fillRow(ilObjUser $member)
     {
-		global $ilAccess;
-
  		$overview = $this->getParentObject()->object;
 
 		/* Display user information */
@@ -129,38 +146,44 @@ class ilTestOverviewTableGUI
 
 		/* Now iterate through overview's tests to
 		   print the results. */
+
 		$results = array();
-		// @todo: Greg, please use a static cache to prevent database request for every table row.
-		// @todo: Furthermore each object (if we have mutiple reference) must only be listed once, if a user has access to multiple references (first one wins)
-		foreach ($overview->getTests(true) as $idx => $test) {
 
-			$result   = "";
-			$progress = LP_STATUS_NOT_ATTEMPTED_NUM;
+		foreach ($overview->getUniqueTests() as $obj_id => $refs)
+		{
+			$test = $overview->getTest($obj_id);
 
-			if ( $ilAccess->checkAccess("tst_statistics", "", $test->getRefId())
-				 || $ilAccess->checkAccess("write", "", $test->getRefId()) ) {
+			$this->tpl->setCurrentBlock( "test_results" );
+			
+			$result = $progress = null;
+			
+			if( $this->accessIndex[$obj_id] )
+			{
 				$activeId  = $test->getActiveIdOfUser($member->getId());
 				$result    = $test->getTestResult($activeId);
 
 				$progress = new ilLPStatus( $test->getId() );
 				$progress = $progress->_lookupStatus($test->getId(), $member->getId());
 
-				if ((bool) $progress) {
-					$result		= (float) sprintf("%.2f", (float) $result['pass']['percent'] * 100);
+				if ((bool) $progress)
+				{
+					$result		= (float) sprintf("%.2f %%", (float) $result['pass']['percent'] * 100);
+					
 					$results[]  = $result;
-
-					/* Format for display */
-					$result	    = $result . " %";
 				}
 				else
-					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed") ;
-			}
+				{
+					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
+				}
 
-			$this->tpl->setCurrentBlock( "test_results" );
-			$this->tpl->setVariable( "TEST_RESULT_CLASS", $this->getCSSByProgress($progress) );
-			$this->tpl->setVariable( "TEST_RESULT_VALUE", $result);
+				$this->tpl->setVariable( "TEST_RESULT_VALUE", $result);
+			}
+			else
+			{
+				$this->tpl->setVariable( "TEST_RESULT_VALUE", $this->lng->txt("rep_robj_xtov_overview_test_no_permission"));
+			}
 			
-			$handledObjects[$test->getId()] = true;
+			$this->tpl->setVariable( "TEST_RESULT_CLASS", $this->getCSSByProgress($progress) );
 
 			$this->tpl->parseCurrentBlock();
 		}
@@ -196,46 +219,77 @@ class ilTestOverviewTableGUI
 		$formatted = array(
 			'items' => array(),
 			'cnt'	=> 0);
-		foreach ($data['items'] as $item) {
-			$group = ilObjectFactory::getInstanceByObjId($item->obj_id, false);
+		foreach ($data['items'] as $item)
+		{
+			$container = ilObjectFactory::getInstanceByObjId($item->obj_id, false);
 
-			if ($group === false)
+			if ($container === false)
 				throw new OutOfRangeException;
 			elseif (! empty($this->filter['flt_group_name'])
-					&& $group->getId() != $this->filter['flt_group_name'])
+					&& $container->getId() != $this->filter['flt_group_name'])
 				/* Filter current group */
 				continue;
 
 			$grpMembers	  = array();
-			$participants = $this->getGroupObject($group);
+			$participants = $this->getMembersObject($item);
 
 			/* Fetch member object by ID to avoid one-per-row
 			   SQL queries. */
-			foreach ($participants->getMembers() as $usrId) {
-				if (! in_array($usrId, array_keys($formatted['items'])) ) {
-					$user = ilObjectFactory::getInstanceByObjId($usrId, false);
-
-					if ($user === false)
-						throw new OutOfRangeException;
-
-					if (! empty($this->filter['flt_participant_name'])) {
+			foreach ($participants->getMembers() as $usrId)
+			{
+				if (! in_array($usrId, array_keys($formatted['items'])) )
+				{
+					if (! empty($this->filter['flt_participant_name']))
+					{
 						$name   = strtolower($user->getFullName());
 						$filter = strtolower($this->filter['flt_participant_name']);
 
 						/* Simulate MySQL LIKE operator */
 						if (false === strstr($name, $filter))
+						{
 							/* User should be skipped. (Does not match filter) */
 							continue;
+						}
 					}
 
-					$formatted['items'][$usrId] = $user;
+					$formatted['items'][$usrId] = $usrId;
 				}
 			}
 		}
-		// @todo: Greg, you have to adjust the max count value because of the filter above.
-		$formatted['cnt'] = count($formatted['items']);
+		
+		$formatted['items'] = $this->fetchUserInformation($formatted['items']);
 
 		return $this->sortByFullName($formatted);
+	}
+	
+	private function fetchUserInformation($usr_ids)
+	{
+		global $ilDB;
+		
+		$usr_id__IN__usrIds = $ilDB->in('usr_id', $usr_ids, false, 'integer');
+		
+		$query = "
+			SELECT usr_id, title, firstname, lastname FROM usr_data WHERE $usr_id__IN__usrIds
+		";
+		
+		$res = $ilDB->query($query);
+		
+		$users = array();
+		
+		while( $row = $ilDB->fetchAssoc($res) )
+		{
+			$user = new ilObjUser();
+			
+			$user->setId($row['usr_id']);
+			$user->setUTitle($row['title']);
+			$user->setFirstname($row['firstname']);
+			$user->setLastname($row['lastname']);
+			$user->setFullname();
+			
+			$users[ $row['usr_id'] ] = $user;
+		}
+		
+		return $users;
 	}
 
 	/**
@@ -252,19 +306,24 @@ class ilTestOverviewTableGUI
 	 */
 	private function getCSSByProgress( $progress )
 	{
-		switch ($progress) {
-			case LP_STATUS_NOT_ATTEMPTED_NUM:
-			default:
+		$progress = (string)$progress;
+		
+		switch ( true )
+		{
+			case $progress === (string)LP_STATUS_NOT_ATTEMPTED_NUM:
 				return "no-result";
 
-			case LP_STATUS_IN_PROGRESS_NUM:
+			case $progress === (string)LP_STATUS_IN_PROGRESS_NUM:
 				return "orange-result";
 
-			case LP_STATUS_COMPLETED_NUM:
+			case $progress === (string)LP_STATUS_COMPLETED_NUM:
 				return "green-result";
 
-			case LP_STATUS_FAILED_NUM:
+			case $progress === (string)LP_STATUS_FAILED_NUM:
 				return "red-result";
+			
+			default:
+				return "no-perm-result";
 		}
 	}
 

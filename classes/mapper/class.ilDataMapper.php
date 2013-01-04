@@ -184,10 +184,13 @@ abstract class ilDataMapper
 		while ($row = $this->db->fetchObject($result))
 			$data['items'][] = $row;
 
-		/* Fill 'cnt' with total count of items */
-		$cntSQL = "SELECT COUNT(*) cnt FROM ($query) subquery";
-		$rowCnt = $this->db->fetchAssoc($this->db->query($cntSQL));
-		$data['cnt'] = $rowCnt['cnt'];
+		if( isset($params['limit']) )
+		{
+			/* Fill 'cnt' with total count of items */
+			$cntSQL = "SELECT COUNT(*) cnt FROM ($query) subquery";
+			$rowCnt = $this->db->fetchAssoc($this->db->query($cntSQL));
+			$data['cnt'] = $rowCnt['cnt'];
+		}
 		return $data;
 	}
 

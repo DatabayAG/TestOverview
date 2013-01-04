@@ -12,13 +12,11 @@ require_once 'Modules/Test/classes/class.ilObjTest.php';
 require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
 				->getDirectory() . '/classes/mapper/class.ilOverviewMapper.php';
 
-class ilObjTestOverview
-	extends ilObjectPlugin
+class ilObjTestOverview extends ilObjectPlugin
 {
-	/**
-	 *	@var array
-	 */
-	private $tests;
+	private $test_objects = array();
+	private $test_obj_id_by_ref_id = null;
+	private $test_ref_ids_by_obj_id = null;
 
 	/**
 	 *	@var array
@@ -38,7 +36,6 @@ class ilObjTestOverview
 	{
 		parent::__construct($a_ref_id);
 
-		$this->tests  = array();
 		$this->groups = array();
 		$this->mapper = new ilOverviewMapper;
 	}
@@ -305,6 +302,49 @@ class ilObjTestOverview
 		/* XXX update $this->tests */
 	}
 
+	private function loadTestData()
+	{
+		global $ilDB;
+
+		$res = $ilDB->queryF("
+			SELECT
+				t2o.ref_id_test ref_id,
+				ref.obj_id obj_id
+			FROM
+				rep_robj_xtov_t2o t2o
+				JOIN object_reference ref
+					ON (ref.ref_id = t2o.ref_id_test)
+				JOIN object_data object
+					ON (object.obj_id = ref.obj_id)
+				JOIN tst_tests test
+					ON (test.obj_fi = object.obj_id)
+			WHERE
+				t2o.obj_id_overview = %s
+				AND ref.deleted IS NULL",
+			array('integer'),
+			array($this->getId()));
+
+		/* Fetch objects into $this->tests. */
+
+		$this->test_obj_id_by_ref_id = array();
+		$this->test_ref_ids_by_obj_id = array();
+
+		while ($row = $ilDB->fetchAssoc( $res ))
+		{
+			if( !isset($this->test_ref_ids_by_obj_id[ $row['obj_id'] ]) )
+			{
+				$this->test_ref_ids_by_obj_id[ $row['obj_id'] ] = array();
+			}
+
+			$this->test_obj_id_by_ref_id[$row['ref_id']] = $row['obj_id'];
+			$this->test_ref_ids_by_obj_id[$row['obj_id']][] = $row['ref_id'];
+		}
+	}
+	
+	private function isTestDataLoaded()
+	{
+		return !is_null($this->test_obj_id_by_ref_id) && !is_null($this->test_ref_ids_by_obj_id);
+	}
 
 	/**
 	 *	Retrieve the list of tests.
@@ -316,42 +356,45 @@ class ilObjTestOverview
 	 *
 	 *	@return array
 	 */
-	public function getTests( $fromDB = false )
+	public function getUniqueTests( $fromDB = false )
 	{
-		if ($fromDB || empty($this->tests)) {
-
-			global $ilDB;
-
-			$res = $ilDB->queryF("
-				SELECT
-					t2o.ref_id_test ref_id
-				FROM
-					rep_robj_xtov_t2o t2o
-					JOIN object_reference ref
-						ON (ref.ref_id = t2o.ref_id_test)
-					JOIN object_data object
-						ON (object.obj_id = ref.obj_id)
-					JOIN tst_tests test
-						ON (test.obj_fi = object.obj_id)
-				WHERE
-					t2o.obj_id_overview = %s
-					AND ref.deleted IS NULL",
-				array('integer'),
-				array($this->getId()));
-
-			/* Fetch objects into $this->tests. */
-			$this->tests = array();
-			while ($row = $ilDB->fetchAssoc( $res )) {
-
-				$reference = ilObjectFactory::getInstanceByRefId( $row['ref_id'], false );
-				if( $reference )
-				{
-					$this->tests[ $row['ref_id'] ] = $reference;
-				}
-			}
+		if ( $fromDB || !$this->isTestDataLoaded() )
+		{
+			$this->loadTestData();
 		}
 
-		return $this->tests;
+		return $this->test_ref_ids_by_obj_id;
+	}
+
+
+	/**
+	 *	Retrieve the list of tests.
+	 *
+	 *	The getTests() method is used to retrieve
+	 *	the list of tests registered with the overview.
+	 *
+	 *	@params	boolean	$fromDB		Wether to fetch from database.
+	 *
+	 *	@return array
+	 */
+	public function getTestReferences( $fromDB = false )
+	{
+		if ( $fromDB || !$this->isTestDataLoaded() )
+		{
+			$this->loadTestData();
+		}
+
+		return $this->test_obj_id_by_ref_id;
+	}
+	
+	public function getTest($obj_id)
+	{
+		if( !isset($this->test_objects[$obj_id]) )
+		{
+			$this->test_objects[$obj_id] = ilObjectFactory::getInstanceByObjId($obj_id);
+		}
+		
+		return $this->test_objects[$obj_id];
 	}
 
 	/**

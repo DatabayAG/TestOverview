@@ -261,6 +261,7 @@ class ilObjTestOverviewGUI
 			(int) $_GET['select_tovr_expanded'] :
 			$this->tree->readRootId()
 		);
+		$exp->setDefaultHiddenObjects($this->object->getUniqueTests(true));
 		$exp->setOutput(0);
 
 		$tpl->setVariable('OBJECT_TREE', $exp->getOutput());

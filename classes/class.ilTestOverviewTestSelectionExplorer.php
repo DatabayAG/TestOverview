@@ -8,6 +8,8 @@ require_once 'Services/Object/classes/class.ilPasteIntoMultipleItemsExplorer.php
  */
 class ilTestOverviewTestSelectionExplorer extends ilPasteIntoMultipleItemsExplorer
 {
+	protected $hidden_nodes = array();
+	
 	/**
 	 * @param string $session_key
 	 */
@@ -35,8 +37,13 @@ class ilTestOverviewTestSelectionExplorer extends ilPasteIntoMultipleItemsExplor
 		 */
 		global $ilAccess;
 
+		if(isset($this->hidden_nodes[$a_ref_id]) && $this->hidden_nodes[$a_ref_id])
+		{
+			return false;
+		}
+
 		$visible = parent::isVisible($a_ref_id, $a_type);
-		// @todo: Hide already selected tests
+
 		if('tst' == $a_type)
 		{
 			if(!$ilAccess->checkAccess('tst_statistics', '', $a_ref_id) && !$ilAccess->checkAccess('write', '', $a_ref_id))
@@ -46,5 +53,16 @@ class ilTestOverviewTestSelectionExplorer extends ilPasteIntoMultipleItemsExplor
 		}
 
 		return $visible;
+	}
+
+	/**
+	 * @param $objects
+	 */
+	public function setDefaultHiddenObjects(array $objects)
+	{
+		foreach($objects as $data)
+		{
+			$this->hidden_nodes[$data[0]] = true;
+		}
 	}
 }

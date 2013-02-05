@@ -1,65 +1,59 @@
 <?php
-/* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
+/* Copyright (c) 1998-2013 ILIAS open source, Extended GPL, see docs/LICENSE */
+
+require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')->getDirectory() . '/classes/mapper/class.ilDataMapper.php';
 
 /**
- *	@package	TestOverview repository plugin
- *	@category	Core
- *	@author		Greg Saive <gsaive@databay.de>
+ * @author Greg Saive <gsaive@databay.de>
  */
-
-/* Internal : */
-require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
-				->getDirectory() . '/classes/mapper/class.ilDataMapper.php';
-
-class ilTestMapper
-	extends ilDataMapper
+class ilTestMapper extends ilDataMapper
 {
 	/**
-	 *	@var string
+	 * @var string
 	 */
-	protected $tableName = "tst_tests test";
+	protected $tableName = 'rep_robj_xtov_t2o';
 
 	/**
-	 *	@see ilDataMapper::getSelectPart()
+	 * @return string
 	 */
 	public function getSelectPart()
 	{
 		$fields = array(
-			"obj_fi",
-			"ref_id",
-			"test_id",
-			"object.title",
-			"object.description",);
+			'obj_fi',
+			'test_id',
+			'ref.ref_id',
+			'od.title',
+			'od.description'
+		);
 
 		return implode(', ', $fields);
 	}
 
 	/**
-	 *	@see ilDataMapper::getFromPart()
+	 * @return string
 	 */
 	public function getFromPart()
 	{
 		$joins = array(
-			"JOIN object_data object
-				ON (test.obj_fi = object.obj_id)",
-			"JOIN object_reference ref
-				ON (ref.obj_id = object.obj_id)",);
+			'INNER JOIN object_reference ref ON (ref.ref_id = rep_robj_xtov_t2o.ref_id_test AND deleted IS NULL)',
+			'INNER JOIN object_data od ON (od.obj_id = ref.obj_id)',
+			'INNER JOIN tst_tests test ON (test.obj_fi = od.obj_id)'
+		);
 
-		return $this->tableName . " " . implode(' ', $joins);
+		return $this->tableName . ' ' . implode(' ', $joins);
 	}
 
 	/**
-	 *	@see ilDataMapper::getWherePart()
+	 * @param array $filters
+	 * @return string
 	 */
 	public function getWherePart(array $filters)
 	{
-		$conditions = array(
-			"ref.deleted IS NULL",);
+		$conditions = array('rep_robj_xtov_t2o.obj_id_overview = ' . $this->db->quote($filters['overview_id'], 'integer'));
 
-		if (! empty($filters['flt_tst_name'])) {
-			$conditions[] = sprintf(
-				"object.title LIKE %s",
-				$this->db->quote("%" . $filters['flt_tst_name'] . "%", 'text'));
+		if(isset($filters['flt_tst_name']) && !empty($filters['flt_tst_name']))
+		{
+			$conditions[] = $this->db->like('od.title', 'text', '%' . $filters['flt_tst_name'] . '%', false);
 		}
 
 		return implode(' AND ', $conditions);

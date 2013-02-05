@@ -58,12 +58,12 @@ class ilObjTestOverviewGUI
 	 */
 	public function performCommand($cmd)
 	{
-		$next_class = $this->ctrl->getNextClass($this);
-		switch ($cmd) {
+		switch($cmd)
+		{
 			case 'updateSettings':
-			case 'updateTestList':
 			case 'updateMemberships':
-			case 'addTests':
+			case 'selectTests':
+			case 'performAddTests':
 			case 'removeTests':
 			case 'addMemberships':
 			case 'removeMemberships':
@@ -228,92 +228,84 @@ class ilObjTestOverviewGUI
 		$tpl->setContent( $this->renderSettings() );
 	}
 
-	/**
-	 *	Command for updating the tests added to the overview.
-	 *
-	 *	This command is executed when the TestListTableGUI
-	 *	is submitted.
-	 */
-	protected function updateTestList()
+	public function selectTests()
 	{
 		/**
 		 * @var $tpl    ilTemplate
 		 * @var $lng    ilLanguage
 		 * @var $ilCtrl ilCtrl
+		 * @var $ilTabs ilTabsGUI
+		 * @var $ilToolbar ilToolbarGUI
 		 */
-		global $tpl, $lng, $ilCtrl;
+		global $tpl, $lng, $ilCtrl, $ilTabs, $ilToolbar;
 
-		$this->initSettingsForm();
-		$this->populateSettings();
+		$ilTabs->activateTab('properties');
+		$ilToolbar->addButton($this->lng->txt('cancel'), $ilCtrl->getLinkTarget($this,'editSettings'));
+		$tpl->addBlockfile('ADM_CONTENT', 'adm_content', 'tpl.paste_into_multiple_objects.html', 'Services/Object');
 
-		/* Get tests from DB to be able to notice deletions
-		   and additions. */
-		$overviewTests = $this->object->getTests(true);
+		$this->includePluginClasses(array('ilTestOverviewTestSelectionExplorer'));
+		$exp = new ilTestOverviewTestSelectionExplorer('select_tovr_expanded');
+		$exp->setExpandTarget($ilCtrl->getLinkTarget($this, 'selectTests'));
+		$exp->setTargetGet('ref_id');
+		$exp->setPostVar('nodes[]');
+		$exp->highlightNode((int)$_GET['ref_id']);
+		$exp->setCheckedItems(
+			is_array($_POST['nodes']) ?  (array)$_POST['nodes'] : array()
+		);
 
-		if (isset($_POST['test_ids'])
-			|| ! empty($overviewTests)) {
+		$tpl->setVariable('FORM_TARGET', '_top');
+		$tpl->setVariable('FORM_ACTION', $ilCtrl->getFormAction($this, 'performAddTests'));
 
-			if (! isset($_POST['test_ids']))
-				$_POST['test_ids'] = array();
+		$exp->setExpand(
+			isset($_GET['select_tovr_expanded']) && (int)$_GET['select_tovr_expanded'] ?
+			(int) $_GET['select_tovr_expanded'] :
+			$this->tree->readRootId()
+		);
+		$exp->setOutput(0);
 
-			/* Executing the registered test retrieval again with the same filters
-			   allows to determine which tests are really removed. */
-			include_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
-						->getDirectory() . "/classes/mapper/class.ilTestMapper.php";
-			$mapper = new ilTestMapper;
-			$displayedIds   = array();
-			$displayedTests = $mapper->getList(array(), $this->getTestList()->filter);
-			foreach ($displayedTests['items'] as $test) {
-				$displayedIds[] = $test->obj_fi;
-			}
-			$displayedIds = array_intersect($displayedIds, array_keys($overviewTests));
-
-			/* Check for deleted/added IDs and execute corresponding routine. */
-			$deletedIds = array_diff($displayedIds, $_POST['test_ids']);
-			$addedIds   = array_diff($_POST['test_ids'], array_keys($overviewTests));
-
-			foreach ($deletedIds as $testId) {
-				$this->object
-					 ->rmTest( $testId );
-			}
-
-			foreach ($addedIds as $testId) {
-				$this->object
-					 ->addTest( $testId );
-			}
-
-			ilUtil::sendSuccess($lng->txt('rep_robj_xtov_tests_updated_success'), true);
-			$ilCtrl->redirect($this, 'editSettings');
-		}
-
-		ilUtil::sendFailure($lng->txt('rep_robj_xtov_min_one_check_test'), true);
-		$tpl->setContent( $this->renderSettings() );
+		$tpl->setVariable('OBJECT_TREE', $exp->getOutput());
+		$tpl->setVariable('CMD_SUBMIT', 'performAddTests');
+		$tpl->setVariable('TXT_SUBMIT', $lng->txt('select'));
 	}
-
-	public function addTests()
+	
+	public function performAddTests()
 	{
 		/**
-		 * @var $tpl    ilTemplate
-		 * @var $lng    ilLanguage
-		 * @var $ilCtrl ilCtrl
+		 * @var $lng      ilLanguage
+		 * @var $ilCtrl   ilCtrl
+		 * @var $ilAccess ilAccessHandler
 		 */
-		global $tpl, $lng, $ilCtrl;
-
-		$this->initSettingsForm();
-		$this->populateSettings();
-
-		if (isset($_POST['test_ids'])) {
-			foreach ($_POST['test_ids'] as $testRefId) {
-				$this->object
-					->addTest( $testRefId );
-			}
-
-			ilUtil::sendSuccess($lng->txt('rep_robj_xtov_tests_updated_success'), true);
-			$ilCtrl->redirect($this, 'editSettings');
+		global $lng, $ilCtrl, $ilAccess;
+		
+		if(!isset($_POST['nodes']) || !is_array($_POST['nodes']) || !$_POST['nodes'])
+		{
+			ilUtil::sendFailure($lng->txt('select_one'));
+			$this->selectTests();
+			return;
 		}
 
-		ilUtil::sendFailure($lng->txt('rep_robj_xtov_min_one_check_test'), true);
-		$tpl->setContent( $this->renderSettings() );
+		$num_nodes = 0;
+		foreach($_POST['nodes'] as $ref_id)
+		{
+			if($ilAccess->checkAccess('tst_statistics', '', $ref_id) || $ilAccess->checkAccess('write', '', $ref_id))
+			{
+				$this->object->addTest($ref_id);
+				++$num_nodes;
+			}
+		}
+
+		if(!$num_nodes)
+		{
+			ilUtil::sendFailure($lng->txt('select_one'));
+			$this->selectTests();
+			return;
+		}
+
+		ilUtil::sendSuccess($this->txt('tests_updated_success'), true);
+		$ilCtrl->redirect($this, 'editSettings');
+		
+		$this->editSettings();
+		return;
 	}
 
 	public function removeTests()
@@ -328,11 +320,11 @@ class ilObjTestOverviewGUI
 		$this->initSettingsForm();
 		$this->populateSettings();
 
-		if (isset($_POST['test_ids'])) {
-
-			foreach ($_POST['test_ids'] as $testId) {
-				$this->object
-					->rmTest( $testId );
+		if (isset($_POST['test_ids']))
+		{
+			foreach ($_POST['test_ids'] as $testId)
+			{
+				$this->object->rmTest($testId);
 			}
 
 			ilUtil::sendSuccess($lng->txt('rep_robj_xtov_tests_updated_success'), true);
@@ -340,7 +332,7 @@ class ilObjTestOverviewGUI
 		}
 
 		ilUtil::sendFailure($lng->txt('rep_robj_xtov_min_one_check_test'), true);
-		$tpl->setContent( $this->renderSettings() );
+		$tpl->setContent($this->renderSettings());
 	}
 
 	/**

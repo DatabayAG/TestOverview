@@ -26,7 +26,11 @@ abstract class ilDataMapper
 	 */
 	public function __construct()
 	{
+		/**
+		 * @var $ilDB ilDB
+		 */
 		global $ilDB;
+
 		$this->db = $ilDB;
 	}
 
@@ -120,7 +124,8 @@ abstract class ilDataMapper
 	{
 		$data = array(
 			'items' => array(),
-			'cnt'   => 0);
+			'cnt'   => 0
+		);
 
 		$select = $this->getSelectPart();
 		$where  = $this->getWherePart($filters);

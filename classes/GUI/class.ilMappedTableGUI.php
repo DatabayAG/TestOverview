@@ -9,8 +9,7 @@
 
 require_once 'Services/Table/classes/class.ilTable2GUI.php';
 
-abstract class ilMappedTableGUI
-	extends ilTable2GUI
+abstract class ilMappedTableGUI extends ilTable2GUI
 {
 	/**
 	 * @var ilDataMapper

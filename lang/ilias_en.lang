@@ -34,7 +34,7 @@ remove_from_overview#:#Remove
 add_to_overview_as_filter#:#Add to Overview as Filter
 item_chosen#:#Chosen
 membership_list_table_title#:#Group/Courses Filter
-membership_list_description#:#Please select certain groups or courses the test participants have to be member off.
+membership_list_description#:#Please select certain groups or courses the test participants have to be member of. If no object is selected, all test participants of the tests selected above are listed.
 membership_list_hdr_membership_title#:#Title
 membership_list_hdr_membership_info#:#Additional Information
 memberships_updated_success#:#Updated successfully.

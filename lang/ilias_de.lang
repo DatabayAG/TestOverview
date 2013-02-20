@@ -34,7 +34,7 @@ remove_from_overview#:#Auswahl aufheben
 add_to_overview_as_filter#:#Für Übersicht als Filter auswählen
 item_chosen#:#Ausgewählt
 membership_list_table_title#:#Gruppen-/Kursfilter
-membership_list_description#:#Wählen Sie hier bitte Gruppen- oder Kurs-Objekte aus, in denen die Testteilnehmer Mitglied sein müssen, damit sie in der Statistik berücksichtigt werden. Es werden nur jene Objekte angezeigt, bei denen Sie selber Mitglied einer lokalen Rolle sind.
+membership_list_description#:#Wählen Sie hier bitte Gruppen- oder Kurs-Objekte aus, in denen die Testteilnehmer Mitglied sein müssen, damit sie in der Statistik berücksichtigt werden. Es werden nur jene Objekte angezeigt, bei denen Sie selber Mitglied einer lokalen Rolle sind. Falls kein Filter gewählt wurde, werden die Testteilnehmer der oben ausgewählten Tests aufgelistet.
 membership_list_hdr_membership_title#:#Titel
 membership_list_hdr_membership_info#:#Zusätzliche Informationen
 memberships_updated_success#:#Die Einstellungen wurden erfolgreich aktualisiert.

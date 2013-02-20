@@ -73,7 +73,7 @@ class ilTestOverviewTableGUI
 					case $ilAccess->checkAccess("tst_statistics", "", $ref_id):
 					case $ilAccess->checkAccess("write", "", $ref_id):
 						$valid_ref_id = $ref_id; 
-						$this->accessIndex[$obj_id] = true;
+						$this->accessIndex[$obj_id] = $valid_ref_id;
 						break 2;
 				}
 			}
@@ -225,6 +225,14 @@ class ilTestOverviewTableGUI
 		$formatted = array(
 			'items' => array(),
 			'cnt'	=> 0);
+		
+		if(!$data['items'])
+		{
+			$formatted = $this->getMapper()->getUniqueTestParticipants(array_keys($this->accessIndex));
+			$formatted['items'] = $this->fetchUserInformation($formatted['items']);
+			return $this->sortByFullName($formatted);
+		}
+		
 		foreach ($data['items'] as $item)
 		{
 			$container = ilObjectFactory::getInstanceByObjId($item->obj_id, false);

@@ -79,4 +79,39 @@ class ilOverviewMapper
 
 		return $pairs;
 	}
+
+	/**
+	 * @param array $obj_ids
+	 * @return array
+	 */
+	public function getUniqueTestParticipants(array $obj_ids)
+	{
+		$in_tst_std   = $this->db->in('tst_std.obj_fi', $obj_ids, false, 'integer');
+		$in_tst_fixed = $this->db->in('tst_fixed.obj_fi', $obj_ids, false, 'integer');
+
+		$query   = "
+			(SELECT act.user_fi
+			FROM tst_tests tst_std
+			INNER JOIN tst_active act
+				ON act.test_fi = tst_std.test_id
+			WHERE $in_tst_std)
+			UNION 
+			(SELECT inv.user_fi
+			FROM tst_tests tst_fixed
+			INNER JOIN tst_invited_user inv
+				ON inv.test_fi = tst_fixed.test_id
+			WHERE $in_tst_fixed)
+			";
+		$res     = $this->db->query($query);
+		$usr_ids = array();
+		while($row = $this->db->fetchAssoc($res))
+		{
+			$usr_ids[] = (int)$row['user_fi'];
+		}
+
+		$data        = array('items' => array_unique($usr_ids));
+		$data['cnt'] = 0;
+
+		return $data;
+	}
 }

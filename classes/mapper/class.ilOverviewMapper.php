@@ -94,12 +94,16 @@ class ilOverviewMapper
 			FROM tst_tests tst_std
 			INNER JOIN tst_active act
 				ON act.test_fi = tst_std.test_id
+			INNER JOIN usr_data ud_std
+				ON ud_std.usr_id = act.user_fi
 			WHERE $in_tst_std)
 			UNION 
 			(SELECT inv.user_fi
 			FROM tst_tests tst_fixed
 			INNER JOIN tst_invited_user inv
 				ON inv.test_fi = tst_fixed.test_id
+			INNER JOIN usr_data ud_fixed
+				ON ud_fixed.usr_id = inv.user_fi
 			WHERE $in_tst_fixed)
 			";
 		$res     = $this->db->query($query);

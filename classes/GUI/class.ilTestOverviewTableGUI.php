@@ -244,31 +244,12 @@ class ilTestOverviewTableGUI
 				/* Filter current group */
 				continue;
 
-			$grpMembers	  = array();
 			$participants = $this->getMembersObject($item);
-
 			/* Fetch member object by ID to avoid one-per-row
 			   SQL queries. */
 			foreach ($participants->getMembers() as $usrId)
 			{
-				if (! in_array($usrId, array_keys($formatted['items'])) )
-				{
-					if (! empty($this->filter['flt_participant_name']))
-					{
-						// @todo: Björn, what about $user? It is undefined?!?
-						$name   = strtolower($user->getFullName());
-						$filter = strtolower($this->filter['flt_participant_name']);
-
-						/* Simulate MySQL LIKE operator */
-						if (false === strstr($name, $filter))
-						{
-							/* User should be skipped. (Does not match filter) */
-							continue;
-						}
-					}
-
-					$formatted['items'][$usrId] = $usrId;
-				}
+				$formatted['items'][$usrId] = $usrId;
 			}
 		}
 		
@@ -300,6 +281,19 @@ class ilTestOverviewTableGUI
 			$user->setFirstname($row['firstname']);
 			$user->setLastname($row['lastname']);
 			$user->setFullname();
+
+			if (! empty($this->filter['flt_participant_name']))
+			{
+				$name   = strtolower($user->getFullName());
+				$filter = strtolower($this->filter['flt_participant_name']);
+
+				/* Simulate MySQL LIKE operator */
+				if (false === strstr($name, $filter))
+				{
+					/* User should be skipped. (Does not match filter) */
+					continue;
+				}
+			}
 			
 			$users[ $row['usr_id'] ] = $user;
 		}

@@ -23,6 +23,11 @@ class ilTestOverviewTableGUI
 	protected $filter = array();
 
 	/**
+	 * @var array
+	 */
+	protected $linked_tst_column_targets = array();
+
+	/**
 	 *	Constructor logic.
 	 *
 	 *	This table GUI constructor method initializes the
@@ -60,20 +65,21 @@ class ilTestOverviewTableGUI
 		foreach( $overview->getUniqueTests() as $obj_id => $refs )
 		{
 			$this->accessIndex[$obj_id] = false;
-			
+			$valid_ref_id = null;
 			foreach( $refs as $ref_id )
 			{
 				switch( true )
 				{
 					case $ilAccess->checkAccess("tst_statistics", "", $ref_id):
 					case $ilAccess->checkAccess("write", "", $ref_id):
-					
+						$valid_ref_id = $ref_id; 
 						$this->accessIndex[$obj_id] = true;
 						break 2;
 				}
 			}
-
-			$this->addColumn( $overview->getTest($obj_id)->getTitle() );
+			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
+			$this->addTestColumn( $overview->getTest($obj_id)->getTitle(), $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
+			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
 		}
 		
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
@@ -241,6 +247,7 @@ class ilTestOverviewTableGUI
 				{
 					if (! empty($this->filter['flt_participant_name']))
 					{
+						// @todo: Björn, what about $user? It is undefined?!?
 						$name   = strtolower($user->getFullName());
 						$filter = strtolower($this->filter['flt_participant_name']);
 
@@ -364,6 +371,142 @@ class ilTestOverviewTableGUI
 		}
 
 		return $sorted;
+	}
+
+	/**
+	 * @param string $a_text
+	 * @param string $link
+	 */
+	public function addTestColumn($a_text, $link)
+	{
+		$this->addColumn($a_text, '');
+		$this->column[count($this->column) - 1]['link'] = $link;
+	}
+
+	/**
+	 * 
+	 */
+	public function fillHeader()
+	{
+		global $lng;
+
+		$allcolumnswithwidth = true;
+		foreach ((array) $this->column as $idx => $column)
+		{
+			if (!strlen($column["width"]))
+			{
+				$allcolumnswithwidth = false;
+			}
+			else if($column["width"] == "1")
+			{
+				// IE does not like 1 but seems to work with 1%
+				$this->column[$idx]["width"] = "1%";
+			}
+		}
+		if ($allcolumnswithwidth)
+		{
+			foreach ((array) $this->column as $column)
+			{
+				$this->tpl->setCurrentBlock("tbl_colgroup_column");
+				$this->tpl->setVariable("COLGROUP_COLUMN_WIDTH", $column["width"]);
+				$this->tpl->parseCurrentBlock();
+			}
+		}
+		$ccnt = 0;
+		foreach ((array) $this->column as $column)
+		{
+			$ccnt++;
+
+			//tooltip
+			if ($column["tooltip"] != "")
+			{
+				include_once("./Services/UIComponent/Tooltip/classes/class.ilTooltipGUI.php");
+				ilTooltipGUI::addTooltip("thc_".$this->getId()."_".$ccnt, $column["tooltip"]);
+			}
+			if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !$column['link'])
+			{
+				$this->tpl->setCurrentBlock("tbl_header_no_link");
+				if ($column["width"] != "")
+				{
+					$this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK"," width=\"".$column["width"]."\"");
+				}
+				if (!$column["is_checkbox_action_column"])
+				{
+					$this->tpl->setVariable("TBL_HEADER_CELL_NO_LINK",
+						$column["text"]);
+				}
+				else
+				{
+					$this->tpl->setVariable("TBL_HEADER_CELL_NO_LINK",
+						ilUtil::img(ilUtil::getImagePath("spacer.png"), $lng->txt("action")));
+				}
+				$this->tpl->setVariable("HEAD_CELL_NL_ID", "thc_".$this->getId()."_".$ccnt);
+
+				if ($column["class"] != "")
+				{
+					$this->tpl->setVariable("TBL_HEADER_CLASS"," " . $column["class"]);
+				}
+				$this->tpl->parseCurrentBlock();
+				$this->tpl->touchBlock("tbl_header_th");
+				continue;
+			}
+			if (($column["sort_field"] == $this->order_field) && ($this->order_direction != ""))
+			{
+				$this->tpl->setCurrentBlock("tbl_order_image");
+				$this->tpl->setVariable("IMG_ORDER_DIR",ilUtil::getImagePath($this->order_direction."_order.png"));
+				$this->tpl->setVariable("IMG_ORDER_ALT", $this->lng->txt("change_sort_direction"));
+				$this->tpl->parseCurrentBlock();
+			}
+
+			$this->tpl->setCurrentBlock("tbl_header_cell");
+			$this->tpl->setVariable("TBL_HEADER_CELL", $column["text"]);
+			$this->tpl->setVariable("HEAD_CELL_ID", "thc_".$this->getId()."_".$ccnt);
+
+			// only set width if a value is given for that column
+			if ($column["width"] != "")
+			{
+				$this->tpl->setVariable("TBL_COLUMN_WIDTH"," width=\"".$column["width"]."\"");
+			}
+
+			$lng_sort_column = $this->lng->txt("sort_by_this_column");
+			$this->tpl->setVariable("TBL_ORDER_ALT",$lng_sort_column);
+
+			$order_dir = "asc";
+
+			if ($column["sort_field"] == $this->order_field)
+			{
+				$order_dir = $this->sort_order;
+
+				$lng_change_sort = $this->lng->txt("change_sort_direction");
+				$this->tpl->setVariable("TBL_ORDER_ALT",$lng_change_sort);
+			}
+
+			if ($column["class"] != "")
+			{
+				$this->tpl->setVariable("TBL_HEADER_CLASS"," " . $column["class"]);
+			}
+			if($column['link'])
+			{
+				$this->setExternalLink($column['link']);
+			}
+			else
+			{
+				$this->setOrderLink($column["sort_field"], $order_dir);
+			}
+			$this->tpl->parseCurrentBlock();
+			$this->tpl->touchBlock("tbl_header_th");
+		}
+
+		$this->tpl->setCurrentBlock("tbl_header");
+		$this->tpl->parseCurrentBlock();
+	}
+
+	/**
+	 * @param string $link
+	 */
+	public function setExternalLink($link)
+	{
+		$this->tpl->setVariable('TBL_ORDER_LINK', $link);
 	}
 }
 

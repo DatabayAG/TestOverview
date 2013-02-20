@@ -62,6 +62,7 @@ class ilObjTestOverviewGUI
 		{
 			case 'updateSettings':
 			case 'updateMemberships':
+			case 'initSelectTests':
 			case 'selectTests':
 			case 'performAddTests':
 			case 'removeTests':
@@ -226,6 +227,31 @@ class ilObjTestOverviewGUI
 		$this->form->setValuesByPost();
 
 		$tpl->setContent( $this->renderSettings() );
+	}
+
+	public function initSelectTests()
+	{
+		/**
+		 * @var $tree ilTree
+		 */
+		global $tree;
+
+		// empty session on init
+		$_SESSION['select_tovr_expanded'] = array();
+
+		// copy opend nodes from repository explorer		
+		$_SESSION['select_tovr_expanded'] = is_array($_SESSION['repexpand']) ? $_SESSION['repexpand'] : array();
+
+		// open current position
+		$path = $tree->getPathId((int)$_GET['ref_id']);
+		foreach((array)$path as $node_id)
+		{
+			if(!in_array($node_id, $_SESSION['select_tovr_expanded']))
+				$_SESSION['select_tovr_expanded'][] = $node_id;
+		}
+
+		$this->selectTests();
+		return;
 	}
 
 	public function selectTests()

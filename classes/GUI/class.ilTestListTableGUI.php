@@ -64,7 +64,7 @@ class ilTestListTableGUI extends ilMappedTableGUI
 
 		$this->setDescription($this->lng->txt('rep_robj_xtov_test_list_description'));
 		$this->setFormAction($ilCtrl->getFormAction($this->getParentObject(), 'updateSettings'));
-		$this->addCommandButton('selectTests', $this->lng->txt('rep_robj_xtov_add_tsts_to_overview'));
+		$this->addCommandButton('initSelectTests', $this->lng->txt('rep_robj_xtov_add_tsts_to_overview'));
 		$this->addMultiCommand('removeTests', $this->lng->txt('rep_robj_xtov_remove_from_overview'));
 
 		$this->setShowRowsSelector(true);

@@ -173,13 +173,15 @@ class ilTestOverviewTableGUI
 
 				if ((bool) $progress)
 				{
-					$result		= (float) sprintf("%.2f %%", (float) $result['pass']['percent'] * 100);
+					$result		= sprintf("%.2f %%", (float) $result['pass']['percent'] * 100);
 					
 					$results[]  = $result;
 				}
 				else
 				{
 					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
+					
+					$results[]  = 0;
 				}
 
 				$this->tpl->setVariable( "TEST_RESULT_VALUE", $result);

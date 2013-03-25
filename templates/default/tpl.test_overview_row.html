@@ -1,5 +1,10 @@
 <tr class="{CSS_ROW}">
 	<td class="std">{TEST_PARTICIPANT}</td>
-	<!-- BEGIN test_results --><td class="std result-col {TEST_RESULT_CLASS}">{TEST_RESULT_VALUE}</td><!-- END test_results -->
-	<td class="std result-col {TEST_AVERAGE_CLASS}">{TEST_AVERAGE_VALUE}</td>
+	<!-- BEGIN result_cell -->
+		<td class="std result-cell"><a href="{RESULT_LINK}" class="result-link {RESULT_CSSCLASS}">{RESULT_VALUE}</a></td>
+	<!-- END result_cell -->
+	<!-- BEGIN result_cell_nolink -->
+		<td class="std result-cell {RESULT_CSSCLASS_NOLINK}"><div>{RESULT_VALUE_NOLINK}</div></td>
+	<!-- END result_cell_nolink -->
+	<td class="std">{AVERAGE_VALUE}</td>
 </tr>

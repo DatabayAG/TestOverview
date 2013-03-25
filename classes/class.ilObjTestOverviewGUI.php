@@ -13,6 +13,7 @@ require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
 /**
  * @ilCtrl_isCalledBy ilObjTestOverviewGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls      ilObjTestOverviewGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilRepositorySearchGUI, ilPublicUserProfileGUI, ilCommonActionDispatcherGUI
+ * @ilCtrl_Calls      ilObjTestOverviewGUI: ilTestEvaluationGUI
  */
 class ilObjTestOverviewGUI
 	extends ilObjectPluginGUI

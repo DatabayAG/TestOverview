@@ -53,6 +53,18 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	{
 		return $data;
 	}
+	
+	/**
+	 * overwrite this method for ungregging the object data structures
+	 * since ilias tables support arrays only
+	 * 
+	 * @param mixed $data
+	 * @return array
+	 */
+	protected function buildTableRowsArray($data)
+	{
+		return $data;
+	}
 
 	/**
 	 *	Populate the TableGUI using the Mapper.
@@ -112,7 +124,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 		   in formatData overload. */
 		$data = $this->formatData($data);
 
-		$this->setData($data['items']);
+		$this->setData( $this->buildTableRowsArray($data['items']) );
 		
  		if( $this->getExternalSegmentation() )
 		{

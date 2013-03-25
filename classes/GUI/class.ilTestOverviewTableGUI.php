@@ -141,35 +141,25 @@ class ilTestOverviewTableGUI
 	 *
      *	@param ilObjTestOverview $overview
      */
-    protected function fillRow(ilObjUser $member)
+    protected function fillRow($row)
     {
  		$overview = $this->getParentObject()->object;
-
-		/* Display user information */
-		$this->tpl->setCurrentBlock( "test_results" );
-		$this->tpl->setVariable( "TEST_PARTICIPANT", $member->getFullName() );
-		$this->tpl->parseCurrentBlock();
-
-		/* Now iterate through overview's tests to
-		   print the results. */
 
 		$results = array();
 
 		foreach ($overview->getUniqueTests() as $obj_id => $refs)
 		{
 			$test = $overview->getTest($obj_id);
+			$activeId  = $test->getActiveIdOfUser($row['member_id']);
 
-			$this->tpl->setCurrentBlock( "test_results" );
-			
 			$result = $progress = null;
-			
+						
 			if( $this->accessIndex[$obj_id] )
 			{
-				$activeId  = $test->getActiveIdOfUser($member->getId());
 				$result    = $test->getTestResult($activeId);
 
-				$progress = new ilLPStatus( $test->getId() );
-				$progress = $progress->_lookupStatus($test->getId(), $member->getId());
+				$lpStatus = new ilLPStatus( $test->getId() );
+				$progress = $lpStatus->_lookupStatus($test->getId(), $row['member_id']);
 
 				if ((bool) $progress)
 				{
@@ -183,29 +173,59 @@ class ilTestOverviewTableGUI
 					
 					$results[]  = 0;
 				}
+				
+				if( $activeId > 0 )
+				{
+					$resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
 
-				$this->tpl->setVariable( "TEST_RESULT_VALUE", $result);
+					$this->populateLinkedCell($resultLink, $result, $this->getCSSByProgress($progress));
+				}
+				else
+				{
+					$this->populateNoLinkCell(
+						$result, $this->getCSSByProgress($progress)
+					);
+				}
 			}
 			else
 			{
-				$this->tpl->setVariable( "TEST_RESULT_VALUE", $this->lng->txt("rep_robj_xtov_overview_test_no_permission"));
+				$this->populateNoLinkCell(
+					$this->lng->txt("rep_robj_xtov_overview_test_no_permission"), $this->getCSSByProgress($progress)
+				);
 			}
-			
-			$this->tpl->setVariable( "TEST_RESULT_CLASS", $this->getCSSByProgress($progress) );
-
-			$this->tpl->parseCurrentBlock();
 		}
 
 		if (count($results))
+		{
 			$average = sprintf("%.2f", (array_sum($results) / count($results)));
+		}
 		else
+		{
 			$average = "";
-
-		$this->tpl->setCurrentBlock( "test_results" );
-		$this->tpl->setVariable( "TEST_AVERAGE_CLASS", "");
-		$this->tpl->setVariable( "TEST_AVERAGE_VALUE", $average . (is_numeric($average) ? "%" : ""));
-		$this->tpl->parseCurrentBlock();
+		}
+		
+		$this->tpl->setVariable( "AVERAGE_CLASS", "");
+		$this->tpl->setVariable( "AVERAGE_VALUE", $average . (is_numeric($average) ? "%" : ""));
+		
+		$this->tpl->setVariable('TEST_PARTICIPANT', $row['member_fullname']);
     }
+	
+	private function populateLinkedCell($resultLink, $resultValue, $cssClass)
+	{
+		$this->tpl->setCurrentBlock('result_cell');
+		$this->tpl->setVariable('RESULT_LINK', $resultLink);
+		$this->tpl->setVariable('RESULT_VALUE', $resultValue);				
+		$this->tpl->setVariable('RESULT_CSSCLASS', $cssClass);
+		$this->tpl->parseCurrentBlock();
+	}
+	
+	private function populateNoLinkCell($resultValue, $cssClass)
+	{
+		$this->tpl->setCurrentBlock('result_cell_nolink');
+		$this->tpl->setVariable('RESULT_VALUE_NOLINK', $resultValue);
+		$this->tpl->setVariable('RESULT_CSSCLASS_NOLINK', $cssClass);
+		$this->tpl->parseCurrentBlock();
+	}
 
 	/**
 	 *	Format the fetched data.
@@ -511,6 +531,42 @@ class ilTestOverviewTableGUI
 	public function setExternalLink($link)
 	{
 		$this->tpl->setVariable('TBL_ORDER_LINK', $link);
+	}
+	
+	/**
+	 * overwrite this method for ungregging the object data structures
+	 * since ilias tables support arrays only
+	 * 
+	 * @param mixed $data
+	 * @return array
+	 */
+	protected function buildTableRowsArray($data)
+	{
+		$rows = array();
+		
+		foreach($data as $member)
+		{
+			$rows[] = array(
+				'member_id' => $member->getId(),
+				'member_fullname' => $member->getFullName()
+			);
+		}
+		
+		return $rows;
+	}
+	
+	protected function buildMemberResultLinkTarget($refId, $activeId)
+	{
+		global $ilCtrl;
+
+		$link = $ilCtrl->getLinkTargetByClass(
+			array('ilObjTestOverviewGUI', 'ilobjtestgui', 'iltestevaluationgui'), 'outParticipantsPassDetails'
+		);
+		
+		$link = ilUtil::appendUrlParameterString($link, "ref_id=$refId");
+		$link = ilUtil::appendUrlParameterString($link, "active_id=$activeId");
+		
+		return $link;
 	}
 }
 

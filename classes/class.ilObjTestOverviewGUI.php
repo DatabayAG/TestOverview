@@ -81,6 +81,12 @@ class ilObjTestOverviewGUI
 				$this->ctrl->forwardCommand($md_gui);
 				return;
 				break;
+
+			case 'ilcommonactiondispatchergui':
+				require_once 'Services/Object/classes/class.ilCommonActionDispatcherGUI.php';
+				$gui = ilCommonActionDispatcherGUI::getInstanceFromAjaxCall();
+				$this->ctrl->forwardCommand($gui);
+				break;
 				
 			default:
 				switch($cmd)

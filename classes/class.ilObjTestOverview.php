@@ -67,6 +67,15 @@ class ilObjTestOverview extends ilObjectPlugin
 			 ->insert(
 				"rep_robj_xtov_overview",
 				array("obj_id" => $this->getId()));
+		$this->createMetaData();
+	}
+
+	/**
+	 * 
+	 */
+	public function doUpdate()
+	{
+		$this->updateMetaData();
 	}
 
 	/**
@@ -160,6 +169,8 @@ class ilObjTestOverview extends ilObjectPlugin
 			"rep_robj_xtov_p2o",
 			"grpcrs",
 			$gvals));
+
+		$this->cloneMetaData($new_obj);
 	}
 
 	/**

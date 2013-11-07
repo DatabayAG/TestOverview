@@ -9,14 +9,16 @@
 
 require_once 'Services/Repository/classes/class.ilObjectPluginGUI.php';
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
+require_once 'Services/PersonalDesktop/interfaces/interface.ilDesktopItemHandling.php';
 
 /**
  * @ilCtrl_isCalledBy ilObjTestOverviewGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls      ilObjTestOverviewGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilRepositorySearchGUI, ilPublicUserProfileGUI, ilCommonActionDispatcherGUI
- * @ilCtrl_Calls      ilObjTestOverviewGUI: ilTestEvaluationGUI
+ * @ilCtrl_Calls      ilObjTestOverviewGUI: ilTestEvaluationGUI, ilMDEditorGUI
  */
 class ilObjTestOverviewGUI
 	extends ilObjectPluginGUI
+	implements ilDesktopItemHandling
 {
 	/**
 	 *	@var ilPropertyFormGUI
@@ -59,32 +61,64 @@ class ilObjTestOverviewGUI
 	 */
 	public function performCommand($cmd)
 	{
-		switch($cmd)
-		{
-			case 'updateSettings':
-			case 'updateMemberships':
-			case 'initSelectTests':
-			case 'selectTests':
-			case 'performAddTests':
-			case 'removeTests':
-			case 'addMemberships':
-			case 'removeMemberships':
-			case 'editSettings':
-				$this->checkPermission('write');
-				$this->$cmd();
-				break;
+		/**
+		 * @var $ilTabs ilTabsGUI
+		 * @var $tpl    ilTemplate
+		 */
+		global $ilTabs, $tpl;
 
-			case 'showContent':
-			case 'applyOverviewFilter':
-			case 'applyTestsFilter':
-			case 'applyGroupsFilter':
-			case 'resetOverviewFilter':
-			case 'resetTestsFilter':
-			case 'resetGroupsFilter':
-				$this->checkPermission('read');
-				$this->$cmd();
+		$tpl->setDescription($this->object->getDescription());
+
+		$next_class = $this->ctrl->getNextClass($this);
+		switch($next_class)
+		{
+			case 'ilmdeditorgui':
+				$this->checkPermission('write');
+				require_once 'Services/MetaData/classes/class.ilMDEditorGUI.php';
+				$md_gui = new ilMDEditorGUI($this->object->getId(), 0, $this->object->getType());
+				$md_gui->addObserver($this->object, 'MDUpdateListener', 'General');
+				$ilTabs->setTabActive('meta_data');
+				$this->ctrl->forwardCommand($md_gui);
+				return;
+				break;
+				
+			default:
+				switch($cmd)
+				{
+					case 'updateSettings':
+					case 'updateMemberships':
+					case 'initSelectTests':
+					case 'selectTests':
+					case 'performAddTests':
+					case 'removeTests':
+					case 'addMemberships':
+					case 'removeMemberships':
+					case 'editSettings':
+						$this->checkPermission('write');
+						$this->$cmd();
+						break;
+		
+					case 'showContent':
+					case 'applyOverviewFilter':
+					case 'applyTestsFilter':
+					case 'applyGroupsFilter':
+					case 'resetOverviewFilter':
+					case 'resetTestsFilter':
+					case 'resetGroupsFilter':
+					case 'addToDesk':
+					case 'removeFromDesk':
+						if(in_array($cmd, array('addToDesk', 'removeFromDesk')))
+						{
+							$cmd .= 'Object';
+						}
+						$this->checkPermission('read');
+						$this->$cmd();
+						break;
+				}
 				break;
 		}
+
+		$this->addHeaderAction();
 	}
 
 	/**
@@ -114,6 +148,7 @@ class ilObjTestOverviewGUI
 		/* Check for write access (editSettings available) */
 		if ($ilAccess->checkAccess('write', '', $this->object->getRefId())) {
 			$ilTabs->addTab('properties', $this->txt('properties'), $ilCtrl->getLinkTarget($this, 'editSettings'));
+			$ilTabs->addTarget('meta_data', $this->ctrl->getLinkTargetByClass('ilmdeditorgui', ''), '', 'ilmdeditorgui');
 		}
 
 		$this->addPermissionTab();
@@ -761,4 +796,69 @@ class ilObjTestOverviewGUI
 		}
 	}
 
+	/**
+	 * @param string $a_sub_type
+	 * @param int    $a_sub_id
+	 * @return ilObjectListGUI|ilObjTestOverviewListGUI
+	 */
+	protected function initHeaderAction($a_sub_type = null, $a_sub_id = null)
+	{
+		/**
+		 * @var $ilUser ilObjUser
+		 */
+		global $ilUser;
+
+		$lg = parent::initHeaderAction();
+		if($lg instanceof ilObjTestOverviewListGUI)
+		{
+			if($ilUser->getId() != ANONYMOUS_USER_ID)
+			{
+				// Maybe handle notifications in future ...
+			}
+		}
+
+		return $lg;
+	}
+
+	/**
+	 * @see ilDesktopItemHandling::addToDesk()
+	 */
+	public function addToDeskObject()
+	{
+		/**
+		 * @var $ilSetting ilSetting
+		 * @var $lng       ilLanguage
+		 */
+		global $ilSetting, $lng;
+
+		if((int)$ilSetting->get('disable_my_offers'))
+		{
+			$this->showContent();
+			return;
+		}
+
+		include_once './Services/PersonalDesktop/classes/class.ilDesktopItemGUI.php';
+		ilDesktopItemGUI::addToDesktop();
+		ilUtil::sendSuccess($lng->txt('added_to_desktop'));
+		$this->showContent();
+	}
+
+	/**
+	 * @see ilDesktopItemHandling::removeFromDesk()
+	 */
+	public function removeFromDeskObject()
+	{
+		global $ilSetting, $lng;
+
+		if((int)$ilSetting->get('disable_my_offers'))
+		{
+			$this->showContent();
+			return;
+		}
+
+		include_once './Services/PersonalDesktop/classes/class.ilDesktopItemGUI.php';
+		ilDesktopItemGUI::removeFromDesktop();
+		ilUtil::sendSuccess($lng->txt('removed_from_desktop'));
+		$this->showContent();
+	}
 }

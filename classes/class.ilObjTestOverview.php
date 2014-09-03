@@ -326,14 +326,14 @@ class ilObjTestOverview extends ilObjectPlugin
 				JOIN object_reference ref
 					ON (ref.ref_id = t2o.ref_id_test)
 				JOIN object_data object
-					ON (object.obj_id = ref.obj_id)
+					ON (object.obj_id = ref.obj_id) AND type = %s
 				JOIN tst_tests test
 					ON (test.obj_fi = object.obj_id)
 			WHERE
 				t2o.obj_id_overview = %s
 				AND ref.deleted IS NULL",
-			array('integer'),
-			array($this->getId()));
+			array('text', 'integer'),
+			array('tst', $this->getId()));
 
 		/* Fetch objects into $this->tests. */
 

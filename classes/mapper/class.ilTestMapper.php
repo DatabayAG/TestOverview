@@ -36,7 +36,7 @@ class ilTestMapper extends ilDataMapper
 	{
 		$joins = array(
 			'INNER JOIN object_reference ref ON (ref.ref_id = rep_robj_xtov_t2o.ref_id_test AND deleted IS NULL)',
-			'INNER JOIN object_data od ON (od.obj_id = ref.obj_id)',
+			"INNER JOIN object_data od ON (od.obj_id = ref.obj_id) AND od.type = 'tst'",
 			'INNER JOIN tst_tests test ON (test.obj_fi = od.obj_id)'
 		);
 

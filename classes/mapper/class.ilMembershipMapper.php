@@ -38,11 +38,24 @@ class ilMembershipMapper
 	 */
 	public function getFromPart()
 	{
-		$joins = array(
-			"JOIN rbac_fa fa ON ua.rol_id = fa.rol_id",
-			"JOIN tree t1 ON t1.child = fa.parent",
-			"JOIN object_reference obr ON t1.parent = obr.ref_id",
-			"JOIN object_data obd ON obr.obj_id = obd.obj_id",);
+		if(version_compare(ILIAS_VERSION_NUMERIC, '4.5.0') >= 0)
+		{
+			$joins = array(
+				"JOIN rbac_fa fa ON ua.rol_id = fa.rol_id",
+				"JOIN tree t1 ON t1.child = fa.parent",
+				"JOIN object_reference obr ON t1.child = obr.ref_id",
+				"JOIN object_data obd ON obr.obj_id = obd.obj_id"
+			);
+		}
+		else
+		{
+			$joins = array(
+				"JOIN rbac_fa fa ON ua.rol_id = fa.rol_id",
+				"JOIN tree t1 ON t1.child = fa.parent",
+				"JOIN object_reference obr ON t1.parent = obr.ref_id",
+				"JOIN object_data obd ON obr.obj_id = obd.obj_id"
+			);
+		}
 
 		return $this->tableName . " " . implode(' ', $joins);
 	}

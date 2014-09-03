@@ -92,6 +92,7 @@ class ilOverviewMapper
 		$query   = "
 			(SELECT act.user_fi
 			FROM tst_tests tst_std
+			INNER JOIN object_data ON object_data.obj_id = tst_std.obj_fi AND object_data.type = 'tst'
 			INNER JOIN tst_active act
 				ON act.test_fi = tst_std.test_id
 			INNER JOIN usr_data ud_std
@@ -100,6 +101,7 @@ class ilOverviewMapper
 			UNION 
 			(SELECT inv.user_fi
 			FROM tst_tests tst_fixed
+			INNER JOIN object_data ON object_data.obj_id = tst_fixed.obj_fi AND object_data.type = 'tst'
 			INNER JOIN tst_invited_user inv
 				ON inv.test_fi = tst_fixed.test_id
 			INNER JOIN usr_data ud_fixed

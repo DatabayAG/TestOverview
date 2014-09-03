@@ -147,7 +147,15 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 */
 	protected function getMembersObject( stdClass $container )
 	{
-		switch ($container->type) {
+		global $ilObjDataCache;
+		
+		$type = $container->type;
+		if(!strlen($type))
+		{
+			$type = $ilObjDataCache->lookupType($container->obj_id);
+		}
+
+		switch ($type) {
 
 			case "grp":
 				include_once 'Modules/Group/classes/class.ilGroupParticipants.php';
@@ -158,8 +166,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 				return new ilCourseParticipants( $container->obj_id );
 
 			default :
-				include_once 'Services/Membership/classes/class.ilParticipants.php';
-				return new ilParticipants( $container->obj_id );
+				throw new ilException("Type not supported");
 		}
 	}
 }

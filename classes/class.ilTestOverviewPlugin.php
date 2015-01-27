@@ -19,4 +19,12 @@ class ilTestOverviewPlugin
 	{
 		return 'TestOverview';
 	}
+
+	static function _getIcon($a_type, $a_size)
+   {
+       return ilPlugin::_getImagePath(IL_COMP_SERVICE, "Repository", "robj",
+           	ilPlugin::lookupNameForId(IL_COMP_SERVICE, "Repository", "robj",$a_type),
+           	"icon_".$a_type.".svg");
+   }
+
 }

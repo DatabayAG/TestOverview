@@ -88,15 +88,15 @@ class ilMembershipListTableGUI
 
 
 	/**
-	 *	Fill a table row.
+	 *    Fill a table row.
 	 *
-	 *	This method is called internally by ilias to
-	 *	fill a table row according to the row template.
+	 *    This method is called internally by ilias to
+	 *    fill a table row according to the row template.
 	 *
-     *	@param ilObjTest $test
+	 * @param stdClass $container
+	 * @internal param \ilObjTest $test
 	 *
-	 *	@throws InvalidArgumentException	on invalid $group parameter
-     */
+	 */
     protected function fillRow(stdClass $container)
 	{
 		$members = $this->getMembersObject($container)->getCountMembers();
@@ -105,18 +105,19 @@ class ilMembershipListTableGUI
 		$this->tpl->setVariable('VAL_CHECKBOX', ilUtil::formCheckbox( false, 'membership_ids[]', $container->obj_id ));
 		$this->tpl->setVariable('OBJECT_TITLE', $container->title);
 		$this->tpl->setVariable('OBJECT_INFO', sprintf("%d %s", $members, $label));
-		$this->tpl->setVariable('OBJECT_IMG_PATH', $this->isAddedContainer($container) ? ilUtil::getImagePath('icon_ok.png') : ilUtil::getImagePath('icon_not_ok.png')); 
+		$this->tpl->setVariable('OBJECT_IMG_PATH', $this->isAddedContainer($container) ? ilUtil::getImagePath('icon_ok.svg') : ilUtil::getImagePath('icon_not_ok.svg')); 
     }
 
 	/**
-	 *	Check wether a group is added to the current overview.
+	 *    Check wether a group is added to the current overview.
 	 *
-	 *	The isAddedGroup() method should be used to check
-	 *	wether a participant group is added to the current
-	 *	overview already or not.
+	 *    The isAddedGroup() method should be used to check
+	 *    wether a participant group is added to the current
+	 *    overview already or not.
 	 *
-	 *	@params	stdClass	$container
-	 *	@return boolean
+	 * @params    stdClass    $container
+	 * @param stdClass $container
+	 * @return boolean
 	 */
 	private function isAddedContainer( stdClass $container )
 	{

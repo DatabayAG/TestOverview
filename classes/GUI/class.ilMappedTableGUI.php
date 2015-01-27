@@ -17,10 +17,11 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	private $mapper;
 
 	/**
-	 *	Set the mapper to be used for data retrieval.
+	 *    Set the mapper to be used for data retrieval.
 	 *
-	 *	@params	ilDataMapper $mapper
-	 *	@return ilMappedTableGUI
+	 * @params    ilDataMapper $mapper
+	 * @param ilDataMapper $mapper
+	 * @return ilMappedTableGUI
 	 */
 	public function setMapper( ilDataMapper $mapper )
 	{
@@ -39,15 +40,16 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	}
 
 	/**
-	 *	Post-query data formatter.
+	 *    Post-query data formatter.
 	 *
-	 *	The formatData() method should be used to retrieve
-	 *	the correct data format after execution of a query.
-	 *	The @see ilMappedTableGUI::populate() method should
-	 *	call formatData() before calling setData().
+	 *    The formatData() method should be used to retrieve
+	 *    the correct data format after execution of a query.
+	 *    The @see ilMappedTableGUI::populate() method should
+	 *    call formatData() before calling setData().
 	 *
-	 *	@params	array	$data
-	 *	@return array
+	 * @params    array    $data
+	 * @param array $data
+	 * @return array
 	 */
 	protected function formatData( array $data )
 	{
@@ -67,16 +69,17 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	}
 
 	/**
-	 *	Populate the TableGUI using the Mapper.
+	 *    Populate the TableGUI using the Mapper.
 	 *
-	 *	The populate() method should be called
-	 *	to fill the overview table with data.
-	 *	The getList() method is called on the
-	 *	registered mapper instance. The formatData()
-	 *	method should be overloaded to handle specific
-	 *	cases of displaying or ordering rows.
+	 *    The populate() method should be called
+	 *    to fill the overview table with data.
+	 *    The getList() method is called on the
+	 *    registered mapper instance. The formatData()
+	 *    method should be overloaded to handle specific
+	 *    cases of displaying or ordering rows.
 	 *
-	 *	@return ilMappedTableGUI
+	 * @throws ilException
+	 * @return ilMappedTableGUI
 	 */
 	public function populate()
     {
@@ -135,15 +138,17 @@ abstract class ilMappedTableGUI extends ilTable2GUI
     }
 
 	/**
-	 *	Retrieve a group object.
+	 *    Retrieve a group object.
 	 *
-	 *	Load a il(Course|Group)Participants object
-	 *	from a ilObj(Course|Group) object. Unfortunately
-	 *	the getMembersObject method is implemented only
-	 *	in ilObjCourse.
+	 *    Load a il(Course|Group)Participants object
+	 *    from a ilObj(Course|Group) object. Unfortunately
+	 *    the getMembersObject method is implemented only
+	 *    in ilObjCourse.
 	 *
-	 *	@params	stdClass	$container	The container object
-	 *	@return ilParticipants|ilGroupParticipants|ilCourseParticipants
+	 * @params    stdClass    $container    The container object
+	 * @param stdClass $container
+	 * @throws ilException
+	 * @return ilParticipants|ilGroupParticipants|ilCourseParticipants
 	 */
 	protected function getMembersObject( stdClass $container )
 	{

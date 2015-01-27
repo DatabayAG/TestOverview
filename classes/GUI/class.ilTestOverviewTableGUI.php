@@ -134,13 +134,14 @@ class ilTestOverviewTableGUI
     }
 
 	/**
-	 *	Fill a table row.
+	 *    Fill a table row.
 	 *
-	 *	This method is called internally by ilias to
-	 *	fill a table row according to the row template.
+	 *    This method is called internally by ilias to
+	 *    fill a table row according to the row template.
 	 *
-     *	@param ilObjTestOverview $overview
-     */
+	 * @param array $row
+	 * @internal param \ilObjTestOverview $overview
+	 */
     protected function fillRow($row)
     {
  		$overview = $this->getParentObject()->object;
@@ -228,16 +229,16 @@ class ilTestOverviewTableGUI
 	}
 
 	/**
-	 *	Format the fetched data.
+	 *    Format the fetched data.
 	 *
-	 *	This method is used internally to retrieve ilObjUser
-	 *	objects from participant group ids (ilObjCourse || ilObjGroup).
+	 *    This method is used internally to retrieve ilObjUser
+	 *    objects from participant group ids (ilObjCourse || ilObjGroup).
 	 *
-	 *	@params	array	$data	array of IDs
+	 * @params    array    $data    array of IDs
 	 *
-	 *	@throws OutOfRangeException			on invalid ID
-	 *	@throws InvalidArgumentException	on invalid obj_id (not grp|crs)
-	 *	@return array
+	 * @param array $data
+	 * @throws OutOfRangeException
+	 * @return array
 	 */
 	protected function formatData( array $data )
 	{
@@ -324,33 +325,35 @@ class ilTestOverviewTableGUI
 	}
 
 	/**
-	 *	Get a CSS class name by the result
+	 *    Get a CSS class name by the result
 	 *
-	 *	The getCSSByResult() method is used internally
-	 *	to determine the CSS class to be set for a given
-	 *	test result.
+	 *    The getCSSByResult() method is used internally
+	 *    to determine the CSS class to be set for a given
+	 *    test result.
 	 *
-	 *	@params	int	$progress	Learning progress (0|1|2|3)
-	 *							@see ilLPStatus
+	 * @params    int    $progress    Learning progress (0|1|2|3)
+	 * @see       ilLPStatus
 	 *
-	 *	@return string
+	 * @param $progress
+	 * @return string
 	 */
+
 	private function getCSSByProgress( $progress )
 	{
 		$progress = (string)$progress;
 		
 		switch ( true )
 		{
-			case $progress === (string)LP_STATUS_NOT_ATTEMPTED_NUM:
+			case $progress === (string) ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM:
 				return "no-result";
 
-			case $progress === (string)LP_STATUS_IN_PROGRESS_NUM:
+			case $progress === (string) ilLPStatus::LP_STATUS_IN_PROGRESS_NUM:
 				return "orange-result";
 
-			case $progress === (string)LP_STATUS_COMPLETED_NUM:
+			case $progress === (string) ilLPStatus::LP_STATUS_COMPLETED_NUM:
 				return "green-result";
 
-			case $progress === (string)LP_STATUS_FAILED_NUM:
+			case $progress === (string) ilLPStatus::LP_STATUS_FAILED_NUM:
 				return "red-result";
 			
 			default:
@@ -359,17 +362,18 @@ class ilTestOverviewTableGUI
 	}
 
 	/**
-	 *	Sort the array of users by their full name.
+	 *    Sort the array of users by their full name.
 	 *
-	 *	This method had to be implemented in order to sort
-	 *	the listed users by their full name. The overview
-	 *	settings allows selecting participant groups rather
-	 *	than users. This means the data fetched according
-	 *	to a test overview, is the participant group's data.
+	 *    This method had to be implemented in order to sort
+	 *    the listed users by their full name. The overview
+	 *    settings allows selecting participant groups rather
+	 *    than users. This means the data fetched according
+	 *    to a test overview, is the participant group's data.
 	 *
-	 *	@params	array	$data	Array with 'cnt' & 'items' indexes.
+	 * @params    array    $data    Array with 'cnt' & 'items' indexes.
 	 *
-	 *	@return array
+	 * @param array $data
+	 * @return array
 	 */
 	protected function sortByFullName( array $data )
 	{

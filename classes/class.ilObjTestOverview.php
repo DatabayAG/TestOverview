@@ -358,14 +358,15 @@ class ilObjTestOverview extends ilObjectPlugin
 	}
 
 	/**
-	 *	Retrieve the list of tests.
+	 *    Retrieve the list of tests.
 	 *
-	 *	The getTests() method is used to retrieve
-	 *	the list of tests registered with the overview.
+	 *    The getTests() method is used to retrieve
+	 *    the list of tests registered with the overview.
 	 *
-	 *	@params	boolean	$fromDB		Wether to fetch from database.
+	 * @params    boolean    $fromDB        Wether to fetch from database.
 	 *
-	 *	@return array
+	 * @param bool $fromDB
+	 * @return array
 	 */
 	public function getUniqueTests( $fromDB = false )
 	{
@@ -379,14 +380,15 @@ class ilObjTestOverview extends ilObjectPlugin
 
 
 	/**
-	 *	Retrieve the list of tests.
+	 *    Retrieve the list of tests.
 	 *
-	 *	The getTests() method is used to retrieve
-	 *	the list of tests registered with the overview.
+	 *    The getTests() method is used to retrieve
+	 *    the list of tests registered with the overview.
 	 *
-	 *	@params	boolean	$fromDB		Wether to fetch from database.
+	 * @params    boolean    $fromDB        Wether to fetch from database.
 	 *
-	 *	@return array
+	 * @param bool $fromDB
+	 * @return array
 	 */
 	public function getTestReferences( $fromDB = false )
 	{
@@ -409,15 +411,16 @@ class ilObjTestOverview extends ilObjectPlugin
 	}
 
 	/**
-	 *	Retrieve the list of participants groups.
+	 *    Retrieve the list of participants groups.
 	 *
-	 *	The getParticipantGroups() method is used to retrieve
-	 *	the list of participants groups registered
-	 *	with the overview.
+	 *    The getParticipantGroups() method is used to retrieve
+	 *    the list of participants groups registered
+	 *    with the overview.
 	 *
-	 *	@params	boolean $fromDB		Wether to fetch from database.
+	 * @params    boolean $fromDB        Wether to fetch from database.
 	 *
-	 *	@return array
+	 * @param bool $fromDB
+	 * @return array
 	 */
 	public function getParticipantGroups( $fromDB = false )
 	{

@@ -55,13 +55,14 @@ abstract class ilDataMapper
 	abstract protected function getFromPart();
 
 	/**
-	 *	Retrieve the WHERE clause conditions.
+	 *    Retrieve the WHERE clause conditions.
 	 *
-	 *	The getWherePart() method is called internally
-	 *	to build the WHERE clause. All conditions should
-	 *	be concatenated and returned by this method.
+	 *    The getWherePart() method is called internally
+	 *    to build the WHERE clause. All conditions should
+	 *    be concatenated and returned by this method.
 	 *
-	 *	@return string
+	 * @param array $filters
+	 * @return string
 	 */
 	abstract protected function getWherePart(array $filters);
 
@@ -76,16 +77,19 @@ abstract class ilDataMapper
 	}
 
 	/**
-	 *	Fetch a single field value from the database.
+	 *    Fetch a single field value from the database.
 	 *
-	 *	The getValue() method can be used to fetch a single
-	 *	field's value from the database.
+	 *    The getValue() method can be used to fetch a single
+	 *    field's value from the database.
 	 *
-	 *	@params	string	$table		relation name
-	 *	@params	string	$field		name of the field to retrieve.
-	 *	@params	array	$conditions	WHERE clause conditions
+	 * @params    string    $table        relation name
+	 * @params    string    $field        name of the field to retrieve.
+	 * @params    array    $conditions    WHERE clause conditions
 	 *
-	 *	@return mixed
+	 * @param       $table
+	 * @param       $field
+	 * @param array $conditions
+	 * @return mixed
 	 */
 	public function getValue( $table, $field, array $conditions = array() )
 	{
@@ -105,20 +109,22 @@ abstract class ilDataMapper
 	}
 
 	/**
-	 *	Fetch a list of entries from the database.
+	 *    Fetch a list of entries from the database.
 	 *
-	 *	The getList() method can be used to retrieve a collection
-	 *	of entries saved in the database in a given table.
+	 *    The getList() method can be used to retrieve a collection
+	 *    of entries saved in the database in a given table.
 	 *
-	 *	@params	array	$params Possible parameters indexes include:
-	 *							 - limit	[~numeric]
-	 *							 - offset	[~numeric]
-	 *							 - order_field		[~string]
-	 *							 - order_direction	[=ASC|DESC]
-	 *							 - group	[~string]
+	 * @params    array    $params Possible parameters indexes include:
+	 *                             - limit    [~numeric]
+	 *                             - offset    [~numeric]
+	 *                             - order_field        [~string]
+	 *                             - order_direction    [=ASC|DESC]
+	 *                             - group    [~string]
 	 *
-	 *	@throws InvalidArgumentException	on invalid parameter values
-	 *	@return array with indexes 'items' and 'cnt'.
+	 * @param array $params
+	 * @param array $filters
+	 * @throws InvalidArgumentException
+	 * @return array with indexes 'items' and 'cnt'.
 	 */
 	public function getList( array $params = array(), array $filters = array() )
 	{

@@ -108,14 +108,15 @@ class ilTestListTableGUI extends ilMappedTableGUI
     }
 
 	/**
-	 *	Retrieve the tree path to an ilObjTest.
+	 *    Retrieve the tree path to an ilObjTest.
 	 *
-	 *	The getTestPath() method should be used to
-	 *	retrieve the full path to a test node in the
-	 *	ilias tree.
+	 *    The getTestPath() method should be used to
+	 *    retrieve the full path to a test node in the
+	 *    ilias tree.
 	 *
-	 *	@params	stdClass	$item
-	 *	@return string
+	 * @params    stdClass    $item
+	 * @param stdClass $item
+	 * @return string
 	 */
 	private function getTestPath( stdClass $item )
 	{

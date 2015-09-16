@@ -27,4 +27,14 @@ class ilTestOverviewPlugin
            	"icon_".$a_type.".svg");
    }
 
+	protected function uninstallCustom()
+	{
+		/**
+		 * @var $ilDB ilDB
+		 */
+		global $ilDB;
+		$ilDB->query('DROP TABLE 	rep_robj_xtov_overview, rep_robj_xtov_t2o, 
+									rep_robj_xtov_p2o');
+	}
+
 }

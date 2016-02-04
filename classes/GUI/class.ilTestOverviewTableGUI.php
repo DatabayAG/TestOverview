@@ -194,6 +194,9 @@ class ilTestOverviewTableGUI
 					$this->lng->txt("rep_robj_xtov_overview_test_no_permission"), $this->getCSSByProgress($progress)
 				);
 			}
+			
+			$this->tpl->setCurrentBlock('cell');
+			$this->tpl->parseCurrentBlock();
 		}
 
 		if (count($results))
@@ -213,7 +216,7 @@ class ilTestOverviewTableGUI
 	
 	private function populateLinkedCell($resultLink, $resultValue, $cssClass)
 	{
-		$this->tpl->setCurrentBlock('result_cell');
+		$this->tpl->setCurrentBlock('result');
 		$this->tpl->setVariable('RESULT_LINK', $resultLink);
 		$this->tpl->setVariable('RESULT_VALUE', $resultValue);				
 		$this->tpl->setVariable('RESULT_CSSCLASS', $cssClass);
@@ -222,7 +225,7 @@ class ilTestOverviewTableGUI
 	
 	private function populateNoLinkCell($resultValue, $cssClass)
 	{
-		$this->tpl->setCurrentBlock('result_cell_nolink');
+		$this->tpl->setCurrentBlock('result_nolink');
 		$this->tpl->setVariable('RESULT_VALUE_NOLINK', $resultValue);
 		$this->tpl->setVariable('RESULT_CSSCLASS_NOLINK', $cssClass);
 		$this->tpl->parseCurrentBlock();

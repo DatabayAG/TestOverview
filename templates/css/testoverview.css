@@ -1,22 +1,11 @@
-td.result-cell, a.result-link
+td.result div.result, td.result a.result
 {
     -moz-border-radius: 20px;
     -webkit-border-radius: 20px;
     -khtml-border-radius: 20px;
     border-radius: 20px;
-}
-
-td.result-cell
-{
-	vertical-align: middle;
-	padding: 0 !important;
-}
-
-a.result-link, td.result-cell div
-{
 	padding: 4px 6px !important;
 	display: block !important;
-    margin: 0.2em;
 }
 
 

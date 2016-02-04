@@ -346,7 +346,7 @@ class ilTestOverviewTableGUI
 
 		foreach($map as $lpNum => $cssClass)
 		{
-			if( $progress === $lpNum ) // we need identical check !!
+			if( $progress === (string)$lpNum ) // we need identical check !!
 			{
 				return $cssClass;
 			}
@@ -360,18 +360,18 @@ class ilTestOverviewTableGUI
 		if( defined('ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM') )
 		{
 			return array(
-				(string)ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
-				(string)ilLPStatus::LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
-				(string)ilLPStatus::LP_STATUS_COMPLETED_NUM => 'green-result',
-				(string)ilLPStatus::LP_STATUS_FAILED_NUM => 'red-result'
+				ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
+				ilLPStatus::LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
+				ilLPStatus::LP_STATUS_COMPLETED_NUM => 'green-result',
+				ilLPStatus::LP_STATUS_FAILED_NUM => 'red-result'
 			);
 		}
 
 		return array(
-			(string)LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
-			(string)LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
-			(string)LP_STATUS_COMPLETED_NUM => 'green-result',
-			(string)LP_STATUS_FAILED_NUM => 'red-result'
+			LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
+			LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
+			LP_STATUS_COMPLETED_NUM => 'green-result',
+			LP_STATUS_FAILED_NUM => 'red-result'
 		);
 	}
 

@@ -340,25 +340,39 @@ class ilTestOverviewTableGUI
 
 	private function getCSSByProgress( $progress )
 	{
+		$map = $this->buildCssClassByProgressMap();
+
 		$progress = (string)$progress;
-		
-		switch ( true )
+
+		foreach($map as $lpNum => $cssClass)
 		{
-			case $progress === (string) ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM:
-				return "no-result";
-
-			case $progress === (string) ilLPStatus::LP_STATUS_IN_PROGRESS_NUM:
-				return "orange-result";
-
-			case $progress === (string) ilLPStatus::LP_STATUS_COMPLETED_NUM:
-				return "green-result";
-
-			case $progress === (string) ilLPStatus::LP_STATUS_FAILED_NUM:
-				return "red-result";
-			
-			default:
-				return "no-perm-result";
+			if( $progress === $lpNum ) // we need identical check !!
+			{
+				return $cssClass;
+			}
 		}
+
+		return 'no-perm-result';
+	}
+
+	public function buildCssClassByProgressMap()
+	{
+		if( defined('ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM') )
+		{
+			return array(
+				(string)ilLPStatus::LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
+				(string)ilLPStatus::LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
+				(string)ilLPStatus::LP_STATUS_COMPLETED_NUM => 'green-result',
+				(string)ilLPStatus::LP_STATUS_FAILED_NUM => 'red-result'
+			);
+		}
+
+		return array(
+			(string)LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
+			(string)LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
+			(string)LP_STATUS_COMPLETED_NUM => 'green-result',
+			(string)LP_STATUS_FAILED_NUM => 'red-result'
+		);
 	}
 
 	/**

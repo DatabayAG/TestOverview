@@ -3,7 +3,7 @@
 $id = 'xtov';
 
 // code version; must be changed for all code changes
-$version = '1.3.1';
+$version = '1.3.2';
 
 // ilias min and max version; must always reflect the versions that should
 // run with the plugin

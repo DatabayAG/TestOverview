@@ -97,7 +97,7 @@ class ilMembershipListTableGUI
 	 * @internal param \ilObjTest $test
 	 *
 	 */
-    protected function fillRow(stdClass $container)
+    protected function fillRow($container)
 	{
 		$members = $this->getMembersObject($container)->getCountMembers();
 		$label   = $this->lng->txt('rep_robj_xtov_membership_count_members');

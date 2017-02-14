@@ -105,7 +105,7 @@ abstract class ilDataMapper
 		$res  = $this->db->query($query);
 		$row  = $this->db->fetchObject($res);
 
-		return $row->{strtolower($field)};
+		return $row->{strtolower($field)} || $row->{strtoupper($field)} ;
 	}
 
 	/**

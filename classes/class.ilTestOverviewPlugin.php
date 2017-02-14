@@ -33,8 +33,21 @@ class ilTestOverviewPlugin
 		 * @var $ilDB ilDB
 		 */
 		global $ilDB;
-		$ilDB->query('DROP TABLE 	rep_robj_xtov_overview, rep_robj_xtov_t2o, 
-									rep_robj_xtov_p2o');
+
+		if($ilDB->tableExists('rep_robj_xtov_overview'))
+		{
+			$ilDB->dropTable('rep_robj_xtov_overview');
+		}
+
+		if($ilDB->tableExists('rep_robj_xtov_t2o'))
+		{
+			$ilDB->dropTable('rep_robj_xtov_t2o');
+		}
+
+		if($ilDB->tableExists('rep_robj_xtov_p2o'))
+		{
+			$ilDB->dropTable('rep_robj_xtov_p2o');
+		}
 	}
 
 }

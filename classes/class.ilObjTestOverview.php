@@ -128,7 +128,7 @@ class ilObjTestOverview extends ilObjectPlugin
 	 *	@params	int					$a_target_id
 	 *	@params int					$a_copy_id
 	 */
-	public function doCloneObject($new_obj, $a_target_id, $a_copy_id)
+	protected function doCloneObject($new_obj, $a_target_id, $a_copy_id = null)
 	{
 		global $ilDB;
 

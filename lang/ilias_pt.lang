@@ -1,0 +1,57 @@
+<!-- language file start -->
+obj_xtov#:#Visão geral de testes
+objs_xtov#:#Visão geral de testes
+obj_xtov_duplicate#:#Copiar
+objs_xtov_duplicate#:#Copiar visões gerais de testes
+xtov_add#:#Adicionar visão geral de testes
+xtov_new#:#Adicionar visão geral de testes
+xtov_visible#:#Visível: visão geral de testes é visível
+xtov_read#:#Ler: Acesso de leitura visão geral de testes
+xtov_write#:#Editar Configurações: Editar visão geral de testes
+xtov_delete#:#Delete: Deletar visão geral de testes
+xtov_edit_permission#:#Alterar permissões: Alterar configurações de permissão
+crs_create_xtov#:#Criar visão geral de testes
+grp_create_xtov#:#Criar visão geral de testes
+fold_create_xtov#:#Criar visão geral de testes
+root_create_xtov#:#Criar visão geral de testes
+cat_create_xtov#:#Criar visão geral de testes
+content#:#Conteúdo
+properties#:#Configurações
+edit_properties#:#Editar Configurações
+title#:#Titulo
+description#:#Descrição
+save#:#Salvar
+cancel#:#Cancelar
+edit#:#Editar
+config_test_overview#:#Configurar visão geral de testes
+test_overview_table_title#:#Visão geral de testes '%s'
+test_list_table_title#:#Testes a serem acumulados na visão geral '%s'
+test_list_description#:#Selecione os testes que você deseja adicionar a esta visão geral. 
+test_list_hdr_test_title#:#Titulo
+test_list_hdr_test_info#:#Caminho para Teste
+add_to_overview#:#Adicionar à visão geral
+remove_from_overview#:#Remover
+add_to_overview_as_filter#:#Adicionar à visão geral como filtro
+item_chosen#:#Escolhido
+membership_list_table_title#:#Grupo / Cursos Filtro
+membership_list_description#:#Selecione determinados grupos ou cursos que os participantes do teste devem ser membros. Se nenhum objeto for selecionado, todos os participantes dos testes selecionados acima são listados.
+membership_list_hdr_membership_title#:#Titulo
+membership_list_hdr_membership_info#:#Informação Adicional
+memberships_updated_success#:#Atualizado com sucesso.
+min_one_check_membership#:#Selecione pelo menos um grupo ou curso.
+tests_updated_success#:#Atualizado com sucesso.
+min_one_check_test#:#Selecione pelo menos um teste.
+test_overview_hdr_user#:#Participante
+test_overview_hdr_avg#:#Média
+test_overview_description#:#Esta tabela mostra os resultados dos testes dos participantes, filtrados por determinadas associações de grupos ou cursos.
+overview_test_not_passed#:#Não aprovado
+overview_avg_not_available#:#Não disponível
+overview_flt_participant_name#:#Participante
+overview_flt_group_name#:#Membro
+test_list_flt_tst_name#:#Nome
+membership_list_flt_grp_name#:#Nome
+overview_result_not_authorized#:#Não autorizado
+membership_count_members#:#Membros
+copy#:#Copiar
+overview_test_no_permission#:#(Sem permissão)
+add_tsts_to_overview#:#Adicionar testes à visão geral

@@ -1,0 +1,45 @@
+<div id="scoped-content">
+<style type="text/css" scoped>
+  td{
+    text-align: center;
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;
+    padding: 6px;
+
+
+  }
+
+  th{
+    padding: 4px;
+  }
+
+  tr {
+    background-color: #FCFCFC;
+  }
+
+  tr:nth-child(2n) {
+    background-color: #F4F4F4;
+  }
+
+</style>
+  <table>
+    <tr>
+<!-- BEGIN user_colum -->    
+      <th> {user} </th>
+<!-- END user_colum -->      
+<!-- BEGIN exercise_colum -->
+        {colum}
+<!-- END exercise_colum -->
+<!-- BEGIN score_colum -->
+      <th> {score} </th>
+<!-- END score_colum -->
+    </tr>
+
+<!-- BEGIN exercise_row -->
+        {data}
+<!-- END exercise_row -->
+
+    </table>
+</div>

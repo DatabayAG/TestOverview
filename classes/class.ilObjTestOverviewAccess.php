@@ -1,17 +1,16 @@
 <?php
+
 /* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
- *	@package	TestOverview repository plugin
- *	@category	RBAC
- *	@author		Greg Saive <gsaive@databay.de>
+ * 	@package	TestOverview repository plugin
+ * 	@category	RBAC
+ * 	@author		Greg Saive <gsaive@databay.de>
  */
-
 require_once 'Services/Repository/classes/class.ilObjectPluginAccess.php';
 
-class ilObjTestOverviewAccess
-	extends ilObjectPluginAccess
-{
+class ilObjTestOverviewAccess extends ilObjectPluginAccess {
+
 	/**
 	 * @param string $a_cmd
 	 * @param string $a_permission
@@ -20,22 +19,22 @@ class ilObjTestOverviewAccess
 	 * @param string $a_user_id
 	 * @return bool
 	 */
-	public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = '')
-	{
+	public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = '') {
 		/**
- 		 * @var $ilUser ilObjUser
+		 * @var $ilUser ilObjUser
 		 */
 		global $ilUser;
 
-		if(!$a_user_id) {
+		if (!$a_user_id) {
 			$a_user_id = $ilUser->getId();
 		}
 
-		switch($a_permission) {
+		switch ($a_permission) {
 			case 'read':
 				return true;
 		}
 
 		return true;
 	}
+
 }

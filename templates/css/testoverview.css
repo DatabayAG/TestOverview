@@ -11,7 +11,7 @@ td.result div.result, td.result a.result
 
 .no-perm-result, .no-result, .orange-result, .green-result, .red-result, .red-result:hover
 {
-	
+
 }
 
 .no-perm-result
@@ -43,3 +43,11 @@ td.result div.result, td.result a.result
 	background: #f00;
 	color: #fff;
 }
+#jo{
+  background-color: black;
+}
+
+  .col-1 {width: 33.33%;
+          background-color: black;}
+  .col-2 {width: 33.33%;}
+  .col-3 {width: 33.33%;}

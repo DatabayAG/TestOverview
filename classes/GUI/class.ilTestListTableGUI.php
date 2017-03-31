@@ -1,46 +1,44 @@
 <?php
+
 /* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
- *	@package	TestOverview repository plugin
- *	@category	GUI
- *	@author		Greg Saive <gsaive@databay.de>
+ * 	@package	TestOverview repository plugin
+ * 	@category	GUI
+ * 	@author		Greg Saive <gsaive@databay.de>
  */
-
 /* Internal : */
 require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')->getDirectory() . '/classes/GUI/class.ilMappedTableGUI.php';
 
-class ilTestListTableGUI extends ilMappedTableGUI
-{
+class ilTestListTableGUI extends ilMappedTableGUI {
+
 	/**
-	 *	 @var	array
+	 * 	 @var	array
 	 */
 	public $filter = array();
 
 	/**
-	 *	Constructor logic.
+	 * 	Constructor logic.
 	 *
-	 *	This table GUI constructor method initializes the
-	 *	object and configures the table rendering.
+	 * 	This table GUI constructor method initializes the
+	 * 	object and configures the table rendering.
 	 */
-	public function __construct(ilObjectGUI $a_parent_obj, $a_parent_cmd)
-	{
+	public function __construct(ilObjectGUI $a_parent_obj, $a_parent_cmd) {
 		/**
-		 *	@var ilCtrl $ilCtrl
+		 * 	@var ilCtrl $ilCtrl
 		 */
 		global $ilCtrl;
 
 		/* Pre-configure table */
 		$this->setId(
-			sprintf(
-				'test_overview_test_list_%d',
-				$a_parent_obj->object->getId()
-			)
+				sprintf(
+						'test_overview_test_list_%d', $a_parent_obj->object->getId()
+				)
 		);
 
 		$this->setDefaultOrderDirection('ASC');
 		$this->setDefaultOrderField('title');
-		
+
 		// ext ordering with db is ok, but ext limiting with db is not possible,
 		// since the rbac filtering is downstream to the db query
 		$this->setExternalSorting(true);
@@ -49,10 +47,9 @@ class ilTestListTableGUI extends ilMappedTableGUI
 		parent::__construct($a_parent_obj, $a_parent_cmd);
 
 		$this->setTitle(
-			sprintf(
-				$this->lng->txt('rep_robj_xtov_test_list_table_title'),
-				$a_parent_obj->object->getTitle()
-			)
+				sprintf(
+						$this->lng->txt('rep_robj_xtov_test_list_table_title'), $a_parent_obj->object->getTitle()
+				)
 		);
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
@@ -76,36 +73,36 @@ class ilTestListTableGUI extends ilMappedTableGUI
 	}
 
 	/**
-	 *	Initialize the table filters.
+	 * 	Initialize the table filters.
 	 *
-	 *	This method is called internally to initialize
-	 *	the filters from present on the top of the table.
+	 * 	This method is called internally to initialize
+	 * 	the filters from present on the top of the table.
 	 */
-	public function initFilter()
-    {
-        include_once 'Services/Form/classes/class.ilTextInputGUI.php';
-        $tname = new ilTextInputGUI($this->lng->txt('rep_robj_xtov_test_list_flt_tst_name'), 'flt_tst_name');
-        $tname->setSubmitFormOnEnter(true);
-        $this->addFilterItem($tname);
-        $tname->readFromSession();
-        $this->filter['flt_tst_name'] = $tname->getValue();
-    }
+	public function initFilter() {
+		include_once 'Services/Form/classes/class.ilTextInputGUI.php';
+		$tname = new ilTextInputGUI($this->lng->txt('rep_robj_xtov_test_list_flt_tst_name'), 'flt_tst_name');
+		$tname->setSubmitFormOnEnter(true);
+		$this->addFilterItem($tname);
+
+
+		$tname->readFromSession();
+		$this->filter['flt_tst_name'] = $tname->getValue();
+	}
 
 	/**
-	 *	Fill a table row.
+	 * 	Fill a table row.
 	 *
-	 *	This method is called internally by ilias to
-	 *	fill a table row according to the row template.
+	 * 	This method is called internally by ilias to
+	 * 	fill a table row according to the row template.
 	 *
-     *	@param stdClass $item
-     */
-    protected function fillRow($item)
-    {
+	 * 	@param stdClass $item
+	 */
+	protected function fillRow($item) {
 		/* Configure template rendering. */
 		$this->tpl->setVariable('VAL_CHECKBOX', ilUtil::formCheckbox(false, 'test_ids[]', $item->ref_id));
 		$this->tpl->setVariable('OBJECT_TITLE', $item->title);
 		$this->tpl->setVariable('OBJECT_INFO', $this->getTestPath($item));
-    }
+	}
 
 	/**
 	 *    Retrieve the tree path to an ilObjTest.
@@ -118,25 +115,24 @@ class ilTestListTableGUI extends ilMappedTableGUI
 	 * @param stdClass $item
 	 * @return string
 	 */
-	private function getTestPath( stdClass $item )
-	{
+	private function getTestPath(stdClass $item) {
 		/**
 		 * @var $tree ilTree
 		 */
-		global $tree;
-		
+		global $tree, $ilCtrl;
+
 		$path_str = '';
 
 		$path = $tree->getNodePath($item->ref_id);
-		while ($node = current($path))
-		{
-			$prepend  = empty($path_str) ? '' : "{$path_str} > ";
+		while ($node = current($path)) {
+			$prepend = empty($path_str) ? '' : "{$path_str} > ";
 			$path_str = $prepend . $node['title'];
 			next($path);
 		}
+		$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $item->ref_id);
+		$path_str = "<div><a href='" . $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen') . "'>" . $path_str . "</a></div>";
 
 		return $path_str;
 	}
 
 }
-

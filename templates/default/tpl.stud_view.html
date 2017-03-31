@@ -1,0 +1,123 @@
+<div id="scoped-content">
+<style type="text/css" scoped>
+
+      td{
+        text-align: center;
+        -moz-border-radius: 20px;
+        -webkit-border-radius: 20px;
+        -khtml-border-radius: 20px;
+        border-radius: 20px;
+        padding: 6px;
+
+
+      }
+      .green-result
+      {
+      	background: #0c0;
+      	color: #000;
+      }
+
+      .red-result
+       {
+         background: red;
+         color: #000;
+       }
+      .grey{
+
+      }
+      table{
+      margin-left:auto;
+      margin-right:auto;
+
+      }
+      tr {
+        background-color: #FCFCFC;
+      }
+
+      tr:nth-child(2n) {
+        background-color: #F4F4F4;
+      }
+      .innerDiv{
+        width: 45%;
+        height: 20%;
+        float: left;
+
+        border-width: 0.5px;
+      }
+      .innerSmallDiv{
+        width: 35%;
+        height: 20%;
+        float: left;
+        border-width: 0.5px;
+      }
+      .overFlow{
+         overflow: auto;
+      }
+
+
+  </style>
+  <div style="background: rgba(252, 252, 252, .5);display:inline-block;border-radius: 20px; width: 100%">
+  <div style="width:25%;float:right; ">
+  <table>
+      <tr> <td> <b>{exerciseTitle}</b> </td> <td> <b> {mark} </b></td> </tr>
+
+      <!-- BEGIN exercise_results -->
+      <tr>
+          <td class=""> {Exercise} </td>  <td> {Mark} </td> 
+      </tr>
+      <!-- END exercise_results -->
+  </table>
+ </div>
+
+  
+  <div style="width:25%; float: right ;">
+      <table >
+        <!-- BEGIN head_row -->
+        <tr> <td ><b>{testTitle}</b></td> <td><b>{score}</b></td> </tr>
+        <!-- END head_row -->
+
+        <!-- BEGIN test_results -->
+        <tr>
+          <td class=""> {Name} </td> {Point}
+        </tr>
+        <!-- END test_results -->
+      </table>
+  </div>
+
+
+
+
+<div style="width: 40.66%; float: left; margin-left: 4%;  ">
+  <div class="overFlow" style="border-bottom-style: solid; border-width: 0.5px;">
+      <div class="innerSmallDiv" style="width: 20%;"><u><b>{test}</b></u></div>
+    <div class="innerSmallDiv">
+      <div style="height: 33.33%; ">{average}:</div>  
+      <div style="height: 33.33%; ">{averagePercent}:</div>
+      <div style="height: 33.32%; ">Ranking:</div>  
+    </div>
+    <div class="innerSamllDiv " >
+      <div style="height: 33.33%; ">{AveragePoints} </div>
+      <div style="height: 33.33%; ">{Average} % </div>
+      <div style="height: 33.33%; ">{toRanking}</div>
+    </div>
+  </div>
+  <div class="overFlow">  
+    <div class="innerSmallDiv" style="width: 20%;">
+        <u><b>{exercise}</b></u>
+    </div>
+    <div class="innerSmallDiv">
+      <div style="height: 33.33%; ">{averageMark}:</div> 
+      <div style="height: 33.33%; ">{totalMark}:</div> 
+      <div style="height: 33.32%; ">Ranking:</div>  
+    </div>
+    <div class="innerDiv ">
+      <div style="height: 33.32%; ">{AverageMark}</div>
+      <div style="height: 33.32%; ">{TotalMark}</div>
+      <div style="height: 33.32%; ">{eoRanking}</div>
+    </div>
+    </div> 
+</div>
+
+</div>
+
+

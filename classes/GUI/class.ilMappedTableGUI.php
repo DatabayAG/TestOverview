@@ -1,16 +1,16 @@
 <?php
+
 /* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
- *	@package	TestOverview repository plugin
- *	@category	GUI
- *	@author		Greg Saive <gsaive@databay.de>
+ * 	@package	TestOverview repository plugin
+ * 	@category	GUI
+ * 	@author		Greg Saive <gsaive@databay.de>
  */
-
 require_once 'Services/Table/classes/class.ilTable2GUI.php';
 
-abstract class ilMappedTableGUI extends ilTable2GUI
-{
+abstract class ilMappedTableGUI extends ilTable2GUI {
+
 	/**
 	 * @var ilDataMapper
 	 */
@@ -23,19 +23,17 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 * @param ilDataMapper $mapper
 	 * @return ilMappedTableGUI
 	 */
-	public function setMapper( ilDataMapper $mapper )
-	{
+	public function setMapper(ilDataMapper $mapper) {
 		$this->mapper = $mapper;
 		return $this;
 	}
 
 	/**
-	 *	Get the registered mapper instance
+	 * 	Get the registered mapper instance
 	 *
-	 *	@return ilDataMapper
+	 * 	@return ilDataMapper
 	 */
-	public function getMapper()
-	{
+	public function getMapper() {
 		return $this->mapper;
 	}
 
@@ -51,11 +49,10 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 * @param array $data
 	 * @return array
 	 */
-	protected function formatData( array $data )
-	{
+	protected function formatData(array $data) {
 		return $data;
 	}
-	
+
 	/**
 	 * overwrite this method for ungregging the object data structures
 	 * since ilias tables support arrays only
@@ -63,9 +60,68 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 * @param mixed $data
 	 * @return array
 	 */
-	protected function buildTableRowsArray($data)
-	{
+	protected function buildTableRowsArray($data) {
 		return $data;
+	}
+
+	/**
+	 * This methode should be integrated into populate(). 
+	 * The method call in ilObjTestOverviewGUI needs to be change to populate()
+	 * 
+	 * This method is used to populate the TableGUIObject.
+	 * 
+	 *            
+	 * @param type $sorting
+	 * @return $this
+	 * @throws ilException
+	 */
+	public function populateE($sorting) {
+
+		if ($this->getExternalSegmentation() && $this->getExternalSorting()) {
+			$this->determineOffsetAndOrder();
+		} elseif (!$this->getExternalSegmentation() && $this->getExternalSorting()) {
+			$this->determineOffsetAndOrder(true);
+		} else {
+			throw new ilException('invalid table configuration: extSort=false / extSegm=true');
+		}
+
+		/* Configure query execution */
+		$params = array();
+		if ($this->getExternalSegmentation()) {
+			$params['limit'] = $this->getLimit();
+			$params['offset'] = $this->getOffset();
+		}
+
+		if ($this->getExternalSorting()) {
+			$params['order_field'] = $this->getOrderField();
+			$params['order_direction'] = $this->getOrderDirection();
+		}
+
+		$overview = $this->getParentObject()->object;
+		$filters = array("overview_id" => $overview->getId()) + $this->filter;
+
+		/* Execute query. */
+		$data = $this->getMapper()->getList($params, $filters);
+
+		if (!count($data['items']) && $this->getOffset() > 0) {
+			/* Query again, offset was incorrect. */
+			$this->resetOffset();
+			$data = $this->getMapper()->getList($params, $filters);
+		}
+
+		/* Post-query logic. Implement custom sorting or display
+		  in formatData overload. */
+
+		$countD = $data['cnt'];
+
+		$data = $this->formatData($data, $sorting);
+		$this->setData($this->buildTableRowsArray($data['items']));
+
+		if ($this->getExternalSegmentation()) {
+			$this->setMaxCount($data['cnt']);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -81,61 +137,52 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 * @throws ilException
 	 * @return ilMappedTableGUI
 	 */
-	public function populate()
-    {
-		if( $this->getExternalSegmentation() && $this->getExternalSorting() )
-		{
+	public function populate($orderByRank = false) {
+		if ($this->getExternalSegmentation() && $this->getExternalSorting()) {
 			$this->determineOffsetAndOrder();
-		}
-		elseif( !$this->getExternalSegmentation() && $this->getExternalSorting() )
-		{
+		} elseif (!$this->getExternalSegmentation() && $this->getExternalSorting()) {
 			$this->determineOffsetAndOrder(true);
-		}
-		else
-		{
+		} else {
 			throw new ilException('invalid table configuration: extSort=false / extSegm=true');
 		}
-		
+
 		/* Configure query execution */
 		$params = array();
-		if( $this->getExternalSegmentation() )
-		{
+		if ($this->getExternalSegmentation()) {
 			$params['limit'] = $this->getLimit();
 			$params['offset'] = $this->getOffset();
 		}
-		if( $this->getExternalSorting() )
-		{
+		if ($this->getExternalSorting()) {
 			$params['order_field'] = $this->getOrderField();
 			$params['order_direction'] = $this->getOrderDirection();
 		}
 
 		$overview = $this->getParentObject()->object;
-		$filters  = array("overview_id" => $overview->getId()) + $this->filter;
+		$filters = array("overview_id" => $overview->getId()) + $this->filter;
 
 		/* Execute query. */
-        $data = $this->getMapper()
-				     ->getList($params, $filters);
+		$data = $this->getMapper()
+				->getList($params, $filters);
 
-        if( !count($data['items']) && $this->getOffset() > 0) {
+		if (!count($data['items']) && $this->getOffset() > 0) {
 			/* Query again, offset was incorrect. */
-            $this->resetOffset();
-	        $data = $this->getMapper()
-					     ->getList($params, $filters);
-        }
+			$this->resetOffset();
+			$data = $this->getMapper()
+					->getList($params, $filters);
+		}
 
 		/* Post-query logic. Implement custom sorting or display
-		   in formatData overload. */
-		$data = $this->formatData($data);
+		  in formatData overload. */
+		$data = $this->formatData($data, $orderByRank);
 
-		$this->setData( $this->buildTableRowsArray($data['items']) );
-		
- 		if( $this->getExternalSegmentation() )
-		{
+		$this->setData($this->buildTableRowsArray($data['items']));
+
+		if ($this->getExternalSegmentation()) {
 			$this->setMaxCount($data['cnt']);
 		}
-		
-        return $this;
-    }
+
+		return $this;
+	}
 
 	/**
 	 *    Retrieve a group object.
@@ -150,13 +197,11 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 	 * @throws ilException
 	 * @return ilParticipants|ilGroupParticipants|ilCourseParticipants
 	 */
-	protected function getMembersObject( stdClass $container )
-	{
+	protected function getMembersObject(stdClass $container) {
 		global $ilObjDataCache;
-		
+
 		$type = $container->type;
-		if(!strlen($type))
-		{
+		if (!strlen($type)) {
 			$type = $ilObjDataCache->lookupType($container->obj_id);
 		}
 
@@ -164,15 +209,15 @@ abstract class ilMappedTableGUI extends ilTable2GUI
 
 			case "grp":
 				include_once 'Modules/Group/classes/class.ilGroupParticipants.php';
-				return new ilGroupParticipants( $container->obj_id );
+				return new ilGroupParticipants($container->obj_id);
 
 			case "crs":
 				include_once 'Modules/Course/classes/class.ilCourseParticipants.php';
-				return new ilCourseParticipants( $container->obj_id );
+				return new ilCourseParticipants($container->obj_id);
 
 			default :
 				throw new ilException("Type not supported");
 		}
 	}
-}
 
+}

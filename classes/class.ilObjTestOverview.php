@@ -455,4 +455,45 @@ class ilObjTestOverview extends ilObjectPlugin
 		return $this->groups;
 	}
 
+	/**
+	 * @param ilObjTest $test
+	 * @param array     $data
+	 */
+	public function gatherTestData(\ilObjTest $test, array &$data)
+	{
+		global $ilDB;
+
+		$res = $ilDB->query("
+			SELECT tst_active.active_id, tst_active.tries, count(tst_sequence.active_fi) sequences, tst_active.last_finished_pass,
+				CASE WHEN
+					(tst_tests.nr_of_tries - 1) = tst_active.last_finished_pass
+				THEN '1'
+				ELSE '0'
+				END is_last_pass
+			FROM tst_active
+			LEFT JOIN tst_sequence
+				ON tst_sequence.active_fi = tst_active.active_id
+			LEFT JOIN tst_tests
+				ON tst_tests.test_id = tst_active.test_fi
+			WHERE tst_active.test_fi = {$ilDB->quote($test->getTestId(), 'integer')} 
+			GROUP BY tst_active.active_id, tst_active.tries
+		");
+
+		while ($row = $ilDB->fetchAssoc($res)) {
+			if ($row['sequences'] == 0) {
+				continue;
+			}
+
+			if ($test->getPassScoring() == SCORE_LAST_PASS) {
+				$is_finished	= false;
+				if($row['last_finished_pass'] != null && $row['sequences'] - 1 == $row['last_finished_pass'])
+				{
+					$is_finished = true;
+				}
+				$row['is_finished'] = $is_finished;
+			}
+
+			$data[$test->getId()][$row['active_id']] = $row;
+		}
+	}
 }

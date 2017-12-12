@@ -28,6 +28,16 @@ class ilTestOverviewTableGUI
 	protected $linked_tst_column_targets = array();
 
 	/**
+	 * @var array 
+	 */
+	protected $evalDataByTestId = array();
+
+	/**
+	 * @var \ilObjTestOverview
+	 */
+	protected $overview;
+
+	/**
 	 *	Constructor logic.
 	 *
 	 *	This table GUI constructor method initializes the
@@ -58,11 +68,11 @@ class ilTestOverviewTableGUI
 			$this->lng->txt('rep_robj_xtov_test_overview_table_title'),
 			$a_parent_obj->object->getTitle()));
 
-		$overview = $this->getParentObject()->object;
+		$this->overview = $this->getParentObject()->object;
 
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_user'));
 		
-		foreach( $overview->getUniqueTests() as $obj_id => $refs )
+		foreach( $this->overview->getUniqueTests() as $obj_id => $refs )
 		{
 			$this->accessIndex[$obj_id] = false;
 			$valid_ref_id = null;
@@ -78,8 +88,10 @@ class ilTestOverviewTableGUI
 				}
 			}
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
-			$this->addTestColumn( $overview->getTest($obj_id)->getTitle(), $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
+			$this->addTestColumn( $this->overview->getTest($obj_id)->getTitle(), $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
+
+			$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 		}
 		
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
@@ -153,45 +165,39 @@ class ilTestOverviewTableGUI
 			$test = $overview->getTest($obj_id);
 			$activeId  = $test->getActiveIdOfUser($row['member_id']);
 
-			$result = $progress = null;
-						
+			$testResult = null;
+
 			if( $this->accessIndex[$obj_id] )
 			{
-				$result    = $test->getTestResult($activeId);
+				$testResult    = $test->getTestResult($activeId);
 
-				$lpStatus = new ilLPStatus( $test->getId() );
-				$progress = $lpStatus->_lookupStatus($test->getId(), $row['member_id']);
-
-				if ((bool) $progress)
+				if (strlen($testResult['pass']['percent']))
 				{
-					$result		= sprintf("%.2f %%", (float) $result['pass']['percent'] * 100);
-					
+					$result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
 					$results[]  = $result;
 				}
 				else
 				{
 					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
-					
 					$results[]  = 0;
 				}
 				
 				if( $activeId > 0 )
 				{
 					$resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
-
-					$this->populateLinkedCell($resultLink, $result, $this->getCSSByProgress($progress));
+					$this->populateLinkedCell($resultLink, $result, $this->getCSSByTestResult($testResult, $activeId, $obj_id));
 				}
 				else
 				{
 					$this->populateNoLinkCell(
-						$result, $this->getCSSByProgress($progress)
+						$result, $this->getCSSByTestResult(null)
 					);
 				}
 			}
 			else
 			{
 				$this->populateNoLinkCell(
-					$this->lng->txt("rep_robj_xtov_overview_test_no_permission"), $this->getCSSByProgress($progress)
+					$this->lng->txt("rep_robj_xtov_overview_test_no_permission"), $this->getCSSByTestResult(null)
 				);
 			}
 			
@@ -325,6 +331,78 @@ class ilTestOverviewTableGUI
 		}
 		
 		return $users;
+	}
+
+	/**
+	 * @param array|null $result
+	 * @param int $activeId
+	 * @param int $testObjId
+	 * @return string
+	 */
+	private function getCSSByTestResult($result, $activeId = null, $testObjId = null)
+	{
+		if (null === $result) {
+			return 'no-result';
+		}
+
+		$row = $this->evalDataByTestId[$testObjId][$activeId];
+		if (!$row) {
+			return 'no-result';
+		}
+
+		$is_passed = false;
+		if (isset($result['test']) && isset($result['test']['passed']) && (bool)$result['test']['passed']) {
+			$is_passed = true;
+		}
+
+		if ($this->overview->getTest($testObjId)->getPassScoring() == SCORE_LAST_PASS) {
+			$status = $this->determineStatusForScoreLastPassTests((bool)$row['is_finished'], $is_passed);
+		} else {
+			$status = 'orange-result';
+
+			if ($row['last_finished_pass'] != null) {
+				$status = $this->determineLpStatus($is_passed);
+			}
+
+			if (!$row['is_last_pass'] && $status == 'red-result') {
+				$status = 'orange-result';
+			}
+		}
+
+		return $status ;
+	}
+
+	/**
+	 * @param $is_finished
+	 * @param $passed
+	 * @return int
+	 */
+	protected function determineStatusForScoreLastPassTests($is_finished, $passed)
+	{
+		$status = 'orange-result';
+
+		if($is_finished)
+		{
+			$status = $this->determineLpStatus($passed);
+		}
+
+		return $status;
+	}
+
+	/**
+	 * @param $passed
+	 * @return int
+	 */
+	protected function determineLpStatus($passed)
+	{
+		$status = 'red-result';
+
+		if($passed)
+		{
+			$status = 'green-result';
+		}
+
+		return $status;
 	}
 
 	/**

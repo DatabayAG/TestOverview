@@ -331,7 +331,9 @@ class ilObjTestOverview extends ilObjectPlugin
 					ON (test.obj_fi = object.obj_id)
 			WHERE
 				t2o.obj_id_overview = %s
-				AND ref.deleted IS NULL",
+				AND ref.deleted IS NULL
+			ORDER BY object.title ASC
+			",
 			array('text', 'integer'),
 			array('tst', $this->getId()));
 

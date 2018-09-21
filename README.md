@@ -11,4 +11,5 @@ The overview itself should present a table matrix of users (rows), test (end) re
 4. Search the **TestOverview** plugin in the list of plugin and choose **Activate** from the **Actions** drop down.
 
 ### More Information
+
 [Ilias Feature Wiki Entry](http://www.ilias.de/docu/goto_docu_wiki_1357_Test_Overview.html)

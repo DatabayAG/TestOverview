@@ -16,7 +16,8 @@ class ilTestOverviewTableGUI
 	extends ilMappedTableGUI
 {
 	private $accessIndex = array();
-	
+	private $readIndex = array();
+
 	/**
 	 *	 @var	array
 	 */
@@ -71,11 +72,14 @@ class ilTestOverviewTableGUI
 		$this->overview = $this->getParentObject()->object;
 
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_user'));
-		
+
 		foreach( $this->overview->getUniqueTests() as $obj_id => $refs )
 		{
+			// Set default permissions based on statistics or write access
 			$this->accessIndex[$obj_id] = false;
+			$this->readIndex[$obj_id] = false;
 			$valid_ref_id = null;
+			$shows_all_users = false;
 			foreach( $refs as $ref_id )
 			{
 				switch( true )
@@ -85,15 +89,19 @@ class ilTestOverviewTableGUI
 						$valid_ref_id = $ref_id; 
 						$this->accessIndex[$obj_id] = $valid_ref_id;
 						break 2;
+					case $ilAccess->checkAccess("read", "", $ref_id):
+						$valid_ref_id = $ref_id;
+						$this->readIndex[$obj_id] = $valid_ref_id;
+						break 2;
 				}
 			}
+
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
 			$this->addTestColumn( $this->overview->getTest($obj_id)->getTitle(), $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
+				$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 
-			$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 		}
-		
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
@@ -166,8 +174,8 @@ class ilTestOverviewTableGUI
 			$activeId  = $test->getActiveIdOfUser($row['member_id']);
 
 			$testResult = null;
-
-			if( $this->accessIndex[$obj_id] )
+			global $ilUser;
+			if( $this->accessIndex[$obj_id] || ( $this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id']) )
 			{
 				$testResult    = $test->getTestResult($activeId);
 
@@ -181,8 +189,8 @@ class ilTestOverviewTableGUI
 					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
 					$results[]  = 0;
 				}
-				
-				if( $activeId > 0 )
+
+				if ($activeId > 0)
 				{
 					$resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
 					$this->populateLinkedCell($resultLink, $result, $this->getCSSByTestResult($testResult, $activeId, $obj_id));

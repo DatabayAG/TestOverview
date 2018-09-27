@@ -17,6 +17,7 @@ class ilObjTestOverview extends ilObjectPlugin
 	private $test_objects = array();
 	private $test_obj_id_by_ref_id = null;
 	private $test_ref_ids_by_obj_id = null;
+	private $result_presentation = 'percentage';
 
 	/**
 	 *	@var array
@@ -66,7 +67,10 @@ class ilObjTestOverview extends ilObjectPlugin
 		$this->getMapper()
 			 ->insert(
 				"rep_robj_xtov_overview",
-				array("obj_id" => $this->getId()));
+				array(
+					"obj_id" => $this->getId(),
+					'result_presentation' => 'percentage')
+			 );
 		$this->createMetaData();
 	}
 
@@ -75,6 +79,18 @@ class ilObjTestOverview extends ilObjectPlugin
 	 */
 	public function doUpdate()
 	{
+		/**
+		 * @var $ilDB ilDB
+		 */
+		global $ilDB;
+
+		$ilDB->update('rep_robj_xtov_overview',
+					  array(
+					  	'result_presentation' => array('text', $this->result_presentation)),
+					 array(
+					 	'obj_id' => array('int', $this->obj_id))
+		);
+
 		$this->updateMetaData();
 	}
 
@@ -97,7 +113,10 @@ class ilObjTestOverview extends ilObjectPlugin
 				obj_id = ' . $ilDB->quote($this->getId(), 'integer'));
 
 		while($row = $ilDB->fetchObject($res))
+		{
 			$this->obj_id = $row->obj_id;
+			$this->result_presentation = $row->result_presentation;
+		}
 	}
 
 	/**
@@ -131,6 +150,7 @@ class ilObjTestOverview extends ilObjectPlugin
 	protected function doCloneObject($new_obj, $a_target_id, $a_copy_id = null)
 	{
 		global $ilDB;
+		$new_obj->setResultPresentation($this->result_presentation);
 
 		$tests  = $this->getTests(true);
 		$groups = $this->getParticipantGroups(true);
@@ -504,5 +524,25 @@ class ilObjTestOverview extends ilObjectPlugin
 
 			$data[$test->getId()][$row['active_id']] = $row;
 		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getResultPresentation()
+	{
+		if(null === $this->result_presentation)
+		{
+			return 'percentage';
+		}
+		return $this->result_presentation;
+	}
+
+	/**
+	 * @param string $result_presentation
+	 */
+	public function setResultPresentation($result_presentation)
+	{
+		$this->result_presentation = $result_presentation;
 	}
 }

@@ -55,3 +55,7 @@ membership_count_members#:#Mitglieder
 copy#:#Kopieren
 overview_test_no_permission#:#(Kein Zugriff)
 add_tsts_to_overview#:#Tests hinzufügen
+result_presentation#:#Anzeige der Daten als
+percentage#:#Prozentwerte
+act_max#:#Punkterreichung
+test_overview_hdr_sum#:#Summe

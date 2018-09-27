@@ -256,7 +256,7 @@ class ilObjTestOverviewGUI
 			   now save settings. */
 			$this->object->setTitle($this->form->getInput('title'));
 			$this->object->setDescription($this->form->getInput('desc'));
-
+			$this->object->setResultPresentation($this->form->getInput('result_presentation'));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt('msg_obj_modified'), true);
 
@@ -586,11 +586,16 @@ class ilObjTestOverviewGUI
 		/* Configure form objects */
 		$ti = new ilTextInputGUI($this->txt('title'), 'title');
 		$ti->setRequired(true);
+		$this->form->addItem( $ti );
 
 		$ta = new ilTextAreaInputGUI($this->txt('description'), 'desc');
-
-		$this->form->addItem( $ti );
 		$this->form->addItem( $ta );
+
+		$tp = new ilRadioGroupInputGUI($this->txt('result_presentation'), 'result_presentation');
+		$tp->addOption(new ilRadioOption($this->txt('percentage'),'percentage'));
+		$tp->addOption(new ilRadioOption($this->txt('act_max'),'act_max'));
+		$this->form->addItem($tp);
+
 		$this->form->addCommandButton('updateSettings', $this->txt('save'));
 	}
 
@@ -605,6 +610,7 @@ class ilObjTestOverviewGUI
 	{
 		$values['title'] = $this->object->getTitle();
 		$values['desc']  = $this->object->getDescription();
+		$values['result_presentation'] = $this->object->getResultPresentation();
 		$this->form->setValuesByArray($values);
 	}
 

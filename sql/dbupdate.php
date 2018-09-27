@@ -92,3 +92,19 @@ foreach($tst_obj_ids as $tov_obj_id => $tst_obj_ids)
 
 $ilDB->free($stmt);
 ?>
+<#5>
+<?php
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'result_presentation'))
+{
+    $ilDB->addTableColumn(
+            'rep_robj_xtov_overview',
+            'result_presentation',
+              array(
+                  'type'    => 'text',
+                  'length'  => 255,
+                  'notnull' => false,
+                  'default' => 'percentage'
+              )
+    );
+}
+?>

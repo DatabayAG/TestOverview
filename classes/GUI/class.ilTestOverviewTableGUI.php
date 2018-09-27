@@ -102,7 +102,14 @@ class ilTestOverviewTableGUI
 				$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 
 		}
-		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+		if($this->overview->getResultPresentation() == 'percentage')
+		{
+			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+		}
+		else
+		{
+			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'));
+		}
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
 		$this->setRowTemplate('tpl.test_overview_row.html', $plugin->getDirectory());
@@ -168,6 +175,8 @@ class ilTestOverviewTableGUI
 
 		$results = array();
 
+		$max_points = 0;
+		$reached_points = 0;
 		foreach ($overview->getUniqueTests() as $obj_id => $refs)
 		{
 			$test = $overview->getTest($obj_id);
@@ -178,10 +187,19 @@ class ilTestOverviewTableGUI
 			if( $this->accessIndex[$obj_id] || ( $this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id']) )
 			{
 				$testResult    = $test->getTestResult($activeId);
+				$max_points = $max_points + $testResult['pass']['total_max_points'];
+				$reached_points = $reached_points + $testResult['pass']['total_reached_points'];
 
 				if (strlen($testResult['pass']['percent']))
 				{
-					$result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
+					if($this->parent_obj->object->getResultPresentation() == 'percentage')
+					{
+						$result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
+					}
+					else
+					{
+						$result		= $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
+					}
 					$results[]  = $result;
 				}
 				else
@@ -215,13 +233,21 @@ class ilTestOverviewTableGUI
 
 		if (count($results))
 		{
-			$average = sprintf("%.2f", (array_sum($results) / count($results)));
+			if($this->parent_obj->object->getResultPresentation() == 'percentage')
+			{
+				$average = sprintf("%.2f", (array_sum($results) / count($results)));
+			}
+			else
+			{
+				$average = $reached_points . ' / ' . $max_points;
+			}
 		}
 		else
 		{
 			$average = "";
 		}
-		
+
+
 		$this->tpl->setVariable( "AVERAGE_CLASS", "");
 		$this->tpl->setVariable( "AVERAGE_VALUE", $average . (is_numeric($average) ? "%" : ""));
 		

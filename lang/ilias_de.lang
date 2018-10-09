@@ -59,3 +59,10 @@ result_presentation#:#Anzeige der Daten als
 percentage#:#Prozentwerte
 act_max#:#Punkterreichung
 test_overview_hdr_sum#:#Summe
+result_column#:#Kombinierte Summenspalte
+points_column#:#Ergebnisspalte nur Punkte
+average_column#:#Ergebnisspalte Durchschnitt
+enable_excel#:#Excel Export aktivieren
+test_overview_hdr_points#:#Erreichte Punkte
+header_points#:#Maximale Anzahl Punkte für Tests in die Titelzeile aufnehmen
+header_points_info#:#Diese Angabe ist nur zutreffend, wenn die Tests so konfiguriert sind, dass immer die gleiche maximale Punktzahl erreichbar ist.

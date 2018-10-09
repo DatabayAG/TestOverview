@@ -14,10 +14,18 @@ require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'T
 
 class ilObjTestOverview extends ilObjectPlugin
 {
+	const PRESENTATION_PERCENTAGE = 'percentage';
+	const PRESENTATION_POINTS     = 'points';
+
 	private $test_objects = array();
 	private $test_obj_id_by_ref_id = null;
 	private $test_ref_ids_by_obj_id = null;
 	private $result_presentation = 'percentage';
+	private $result_column = true;
+	private $points_column = false;
+	private $average_column = false;
+	private $enable_excel = false;
+	private $header_points = false;
 
 	/**
 	 *	@var array
@@ -69,7 +77,13 @@ class ilObjTestOverview extends ilObjectPlugin
 				"rep_robj_xtov_overview",
 				array(
 					"obj_id" => $this->getId(),
-					'result_presentation' => 'percentage')
+					'result_presentation' => $this->result_presentation,
+					'result_column' => $this->result_column,
+					'points_column' => $this->points_column,
+					'average_column' => $this->average_column,
+					'enable_excel' => $this->enable_excel,
+					'header_points' => $this->header_points,
+					)
 			 );
 		$this->createMetaData();
 	}
@@ -86,7 +100,13 @@ class ilObjTestOverview extends ilObjectPlugin
 
 		$ilDB->update('rep_robj_xtov_overview',
 					  array(
-					  	'result_presentation' => array('text', $this->result_presentation)),
+					  	'result_presentation' => array('text', $this->result_presentation),
+					  	'result_column'	      => array('int', (int)$this->result_column),
+					  	'points_column'       => array('int', (int)$this->points_column),
+					  	'average_column'      => array('int', (int)$this->average_column),
+					  	'enable_excel'        => array('int', (int)$this->enable_excel),
+					  	'header_points'        => array('int', (int)$this->header_points),
+					  ),
 					 array(
 					 	'obj_id' => array('int', $this->obj_id))
 		);
@@ -116,6 +136,11 @@ class ilObjTestOverview extends ilObjectPlugin
 		{
 			$this->obj_id = $row->obj_id;
 			$this->result_presentation = $row->result_presentation;
+			$this->result_column = (bool)$row->result_column;
+			$this->points_column = (bool)$row->points_column;
+			$this->average_column = (bool)$row->average_column;
+			$this->enable_excel = (bool)$row->enable_excel;
+			$this->header_points = (bool)$row->header_points;
 		}
 	}
 
@@ -531,10 +556,6 @@ class ilObjTestOverview extends ilObjectPlugin
 	 */
 	public function getResultPresentation()
 	{
-		if(null === $this->result_presentation)
-		{
-			return 'percentage';
-		}
 		return $this->result_presentation;
 	}
 
@@ -544,5 +565,85 @@ class ilObjTestOverview extends ilObjectPlugin
 	public function setResultPresentation($result_presentation)
 	{
 		$this->result_presentation = $result_presentation;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getResultColumn()
+	{
+		return $this->result_column;
+	}
+
+	/**
+	 * @param bool $result_column
+	 */
+	public function setResultColumn($result_column)
+	{
+		$this->result_column = $result_column;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getPointsColumn()
+	{
+		return $this->points_column;
+	}
+
+	/**
+	 * @param bool $points_column
+	 */
+	public function setPointsColumn($points_column)
+	{
+		$this->points_column = $points_column;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getAverageColumn()
+	{
+		return $this->average_column;
+	}
+
+	/**
+	 * @param bool $average_column
+	 */
+	public function setAverageColumn($average_column)
+	{
+		$this->average_column = $average_column;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getEnableExcel()
+	{
+		return $this->enable_excel;
+	}
+
+	/**
+	 * @param bool $enable_excel
+	 */
+	public function setEnableExcel($enable_excel)
+	{
+		$this->enable_excel = $enable_excel;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getHeaderPoints()
+	{
+		return $this->header_points;
+	}
+
+	/**
+	 * @param bool $header_points
+	 */
+	public function setHeaderPoints($header_points)
+	{
+		$this->header_points = $header_points;
 	}
 }

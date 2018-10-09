@@ -108,3 +108,75 @@ if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'result_presentation'))
     );
 }
 ?>
+<#6>
+<?php
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'result_column'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_overview',
+		'result_column',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 1
+		)
+	);
+}
+
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'points_column'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_overview',
+		'points_column',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 0
+		)
+	);
+}
+
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'average_column'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_overview',
+		'average_column',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 0
+		)
+	);
+}
+
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'enable_excel'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_overview',
+		'enable_excel',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 0
+		)
+	);
+}
+
+if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'header_points'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_overview',
+		'header_points',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 0
+		)
+	);
+}
+?>

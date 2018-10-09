@@ -257,6 +257,11 @@ class ilObjTestOverviewGUI
 			$this->object->setTitle($this->form->getInput('title'));
 			$this->object->setDescription($this->form->getInput('desc'));
 			$this->object->setResultPresentation($this->form->getInput('result_presentation'));
+			$this->object->setResultColumn($this->form->getInput('result_column'));
+			$this->object->setPointsColumn($this->form->getInput('points_column'));
+			$this->object->setAverageColumn($this->form->getInput('average_column'));
+			$this->object->setEnableExcel($this->form->getInput('enable_excel'));
+			$this->object->setHeaderPoints($this->form->getInput('header_points'));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt('msg_obj_modified'), true);
 
@@ -596,6 +601,22 @@ class ilObjTestOverviewGUI
 		$tp->addOption(new ilRadioOption($this->txt('act_max'),'act_max'));
 		$this->form->addItem($tp);
 
+		$result_column = new ilCheckboxInputGUI($this->txt('result_column'), 'result_column');
+		$this->form->addItem($result_column);
+
+		$points_column = new ilCheckboxInputGUI($this->txt('points_column'), 'points_column');
+		$this->form->addItem($points_column);
+
+		$header_points = new ilCheckboxInputGUI($this->txt('header_points'), 'header_points');
+		$header_points->setInfo($this->txt('header_points_info'));
+		$points_column->addSubItem($header_points);
+
+		$average_column = new ilCheckboxInputGUI($this->txt('average_column'), 'average_column');
+		$this->form->addItem($average_column);
+
+		$enable_excel = new ilCheckboxInputGUI($this->txt('enable_excel'), 'enable_excel');
+		$this->form->addItem($enable_excel);
+
 		$this->form->addCommandButton('updateSettings', $this->txt('save'));
 	}
 
@@ -611,6 +632,12 @@ class ilObjTestOverviewGUI
 		$values['title'] = $this->object->getTitle();
 		$values['desc']  = $this->object->getDescription();
 		$values['result_presentation'] = $this->object->getResultPresentation();
+		$values['result_column'] = $this->object->getResultColumn();
+		$values['points_column'] = $this->object->getPointsColumn();
+		$values['average_column'] = $this->object->getAverageColumn();
+		$values['enable_excel'] = $this->object->getEnableExcel();
+		$values['header_points'] = $this->object->getHeaderPoints();
+
 		$this->form->setValuesByArray($values);
 	}
 

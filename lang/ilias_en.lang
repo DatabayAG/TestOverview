@@ -59,3 +59,10 @@ result_presentation#:#Display data as
 percentage#:#Percentage
 act_max#:#Reached Points
 test_overview_hdr_sum#:#Sum
+result_column#:#Combined Sum Column
+points_column#:#Result Column Points
+average_column#:#Result Column Average
+enable_excel#:#Activate Excel Export
+test_overview_hdr_points#:#Achieved Points
+header_points#:#Display maximum possible points in title row
+header_points_info#:#The value shown is valid only, if the tests are configured in a way that always the same maximum number of points is possible to reach.

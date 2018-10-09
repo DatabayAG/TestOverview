@@ -96,20 +96,33 @@ class ilTestOverviewTableGUI
 				}
 			}
 
-			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
-			$this->addTestColumn( $this->overview->getTest($obj_id)->getTitle(), $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
-			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
-				$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
+			$title_text = $this->overview->getTest($obj_id)->getTitle();
+			if($this->overview->getPointsColumn() && $this->overview->getHeaderPoints())
+			{
+				/** @var ilObjTest $test_object */
+				$test_object = $this->overview->getTest($obj_id);
+				$evaluation = $test_object->getCompleteEvaluationData(false);
+				$participants = $evaluation->getParticipants();
+				if(count($participants))
+				{
+					/** @var ilTestEvaluationUserData $participant */
+					$participant = current($participants);
+					$title_text .= ' (' . $participant->getMaxpoints() . ' ' . $this->lng->txt('points'). ')';
+				}
+				else
+				{
+					$title_text .= ' (? ' . $this->lng->txt('points'). ')';
+				}
+			}
 
+			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
+			$this->addTestColumn( $title_text, $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
+			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
+			$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 		}
-		if($this->overview->getResultPresentation() == 'percentage')
-		{
-			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
-		}
-		else
-		{
-			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'));
-		}
+
+		$this->setupEvaluationColumns();
+		// TODO: Add Toolbar Button for Excel Export
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
 		$this->setRowTemplate('tpl.test_overview_row.html', $plugin->getDirectory());
@@ -192,13 +205,20 @@ class ilTestOverviewTableGUI
 
 				if (strlen($testResult['pass']['percent']))
 				{
-					if($this->parent_obj->object->getResultPresentation() == 'percentage')
+					if($this->parent_obj->object->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE)
 					{
 						$result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
 					}
 					else
 					{
-						$result		= $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
+						if($this->overview->getPointsColumn() && $this->overview->getHeaderPoints())
+						{
+							$result	= $testResult['pass']['total_reached_points'];
+						}
+						else
+						{
+							$result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
+						}
 					}
 					$results[]  = $result;
 				}
@@ -231,26 +251,8 @@ class ilTestOverviewTableGUI
 			$this->tpl->parseCurrentBlock();
 		}
 
-		if (count($results))
-		{
-			if($this->parent_obj->object->getResultPresentation() == 'percentage')
-			{
-				$average = sprintf("%.2f", (array_sum($results) / count($results)));
-			}
-			else
-			{
-				$average = $reached_points . ' / ' . $max_points;
-			}
-		}
-		else
-		{
-			$average = "";
-		}
+		$this->populateEvaluationColumns($results, $reached_points, $max_points);
 
-
-		$this->tpl->setVariable( "AVERAGE_CLASS", "");
-		$this->tpl->setVariable( "AVERAGE_VALUE", $average . (is_numeric($average) ? "%" : ""));
-		
 		$this->tpl->setVariable('TEST_PARTICIPANT', $row['member_fullname']);
     }
 	
@@ -437,6 +439,103 @@ class ilTestOverviewTableGUI
 		}
 
 		return $status;
+	}
+
+	public function setupEvaluationColumns()
+	{
+		if($this->overview->getResultColumn())
+		{
+			if ($this->overview->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE)
+			{
+				$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+			}
+			else
+			{
+				$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'));
+			}
+		}
+
+		if($this->overview->getPointsColumn())
+		{
+			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points'));
+		}
+
+		if($this->overview->getAverageColumn())
+		{
+			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+		}
+	}
+
+	/**
+	 * @param $results
+	 * @param $reached_points
+	 * @param $max_points
+	 */
+	protected function populateEvaluationColumns($results, $reached_points, $max_points)
+	{
+		if($this->overview->getResultColumn())
+		{
+			$this->populateResultCell($results, $reached_points, $max_points);
+		}
+
+		if($this->overview->getPointsColumn())
+		{
+			if (count($results))
+			{
+				$points = sprintf("%.2f", array_sum($results));
+			}
+			else
+			{
+				$points = "";
+			}
+
+			$this->tpl->setCurrentBlock('points');
+			$this->tpl->setVariable("POINTS_VALUE", $points );
+			$this->tpl->parseCurrentBlock();
+		}
+
+		if($this->overview->getAverageColumn())
+		{
+			if (count($results))
+			{
+				$points = sprintf("%.2f", (array_sum($results) / count($results)));
+			}
+			else
+			{
+				$points = "";
+			}
+
+			$this->tpl->setCurrentBlock('avg');
+			$this->tpl->setVariable("AVG_VALUE", $points );
+			$this->tpl->parseCurrentBlock();
+		}
+	}
+
+	/**
+	 * @param $results
+	 * @param $reached_points
+	 * @param $max_points
+	 */
+	protected function populateResultCell($results, $reached_points, $max_points)
+	{
+		if (count($results))
+		{
+			if ($this->parent_obj->object->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE)
+			{
+				$average = sprintf("%.2f", (array_sum($results) / count($results)));
+			}
+			else
+			{
+				$average = $reached_points . ' / ' . $max_points;
+			}
+		}
+		else
+		{
+			$average = "";
+		}
+		$this->tpl->setCurrentBlock('sum');
+		$this->tpl->setVariable("SUM_VALUE", $average . (is_numeric($average) ? "%" : ""));
+		$this->tpl->parseCurrentBlock();
 	}
 
 	/**

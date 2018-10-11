@@ -113,6 +113,7 @@ class ilObjTestOverviewGUI
 					case 'resetGroupsFilter':
 					case 'addToDesk':
 					case 'removeFromDesk':
+					case 'exportExcel':
 						if(in_array($cmd, array('addToDesk', 'removeFromDesk')))
 						{
 							$cmd .= 'Object';
@@ -189,6 +190,36 @@ class ilObjTestOverviewGUI
 		/* Populate template */
 		$tpl->setDescription($this->object->getDescription());
 		$tpl->setContent( $table->getHTML() );
+	}
+
+	/**
+	 *	Command for rendering a Test Overview.
+	 *
+	 *	This command displays a test overview entry
+	 *	and its data. This method is called by
+	 *	@see self::performCommand().
+	 */
+	protected function exportExcel()
+	{
+		/**
+		 * @var $tpl ilTemplate
+		 * @var $ilTabs ilTabsGUI
+		 */
+		global $tpl, $ilTabs;
+
+		$this->includePluginClasses(array(
+			"ilTestOverviewTableGUI",
+			"ilOverviewMapper"));
+
+		/* Configure content UI */
+		$table = new ilTestOverviewTableGUI( $this, 'showContent' );
+		$table->setMapper(new ilOverviewMapper)->populate();
+
+		$table->getHTML(); // No cooler way to do it, sorry.
+
+		require_once './Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/classes/class.ilTestOverviewExcelExporter.php';
+		$exporter = new ilTestOverviewExcelExporter();
+		$exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
 	}
 
 	/**

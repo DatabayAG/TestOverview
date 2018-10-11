@@ -18,6 +18,8 @@ class ilTestOverviewTableGUI
 	private $accessIndex = array();
 	private $readIndex = array();
 
+	private $temp_results = array();
+
 	/**
 	 *	 @var	array
 	 */
@@ -37,6 +39,9 @@ class ilTestOverviewTableGUI
 	 * @var \ilObjTestOverview
 	 */
 	protected $overview;
+
+	private $export_header_data;
+	private $export_row_data;
 
 	/**
 	 *	Constructor logic.
@@ -72,6 +77,7 @@ class ilTestOverviewTableGUI
 		$this->overview = $this->getParentObject()->object;
 
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_user'));
+		$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_user');
 
 		foreach( $this->overview->getUniqueTests() as $obj_id => $refs )
 		{
@@ -117,6 +123,7 @@ class ilTestOverviewTableGUI
 
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
 			$this->addTestColumn( $title_text, $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
+			$this->export_header_data[] = $title_text;
 			$ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
 			$this->overview->gatherTestData($this->overview->getTest($obj_id), $this->evalDataByTestId);
 		}
@@ -137,6 +144,41 @@ class ilTestOverviewTableGUI
 		$this->setResetCommand("resetOverviewFilter");
 
 		$this->setFormAction($ilCtrl->getFormAction($this->getParentObject(), 'showContent') );
+
+		if($this->overview->getEnableExcel())
+		{
+			$button = ilLinkButton::getInstance();
+			$button->setCaption('tbl_export_excel');
+			$button->setUrl($ilCtrl->getLinkTarget($this->parent_obj, 'exportExcel'));
+			/** @var ilToolbarGUI $ilToolbar */
+			global $ilToolbar;
+			$ilToolbar->addButtonInstance($button);
+		}
+	}
+
+	/**
+	 * Execute command.
+	 */
+	function executeCommand()
+	{
+		$ilCtrl = $this->ctrl;
+
+		$next_class = $ilCtrl->getNextClass($this);
+		$cmd = $ilCtrl->getCmd();
+
+		switch($next_class)
+		{
+			case 'ilformpropertydispatchgui':
+				include_once './Services/Form/classes/class.ilFormPropertyDispatchGUI.php';
+				$form_prop_dispatch = new ilFormPropertyDispatchGUI();
+				$this->initFilter();
+				$item = $this->getFilterItemByPostVar($_GET["postvar"]);
+				$form_prop_dispatch->setItem($item);
+				return $ilCtrl->forwardCommand($form_prop_dispatch);
+				break;
+
+		}
+		return false;
 	}
 
 	/**
@@ -253,18 +295,31 @@ class ilTestOverviewTableGUI
 
 		$this->populateEvaluationColumns($results, $reached_points, $max_points);
 
+		$row_data = array();
+		$row_data[] = $row['member_fullname'];
+		foreach($results as $item)
+		{
+			$row_data[] = $item;
+		}
+		foreach($this->temp_results as $item)
+		{
+			$row_data[] = $item;
+		}
+		$this->export_row_data[] = $row_data;
+		$this->temp_results = array();
+
 		$this->tpl->setVariable('TEST_PARTICIPANT', $row['member_fullname']);
     }
-	
+
 	private function populateLinkedCell($resultLink, $resultValue, $cssClass)
 	{
 		$this->tpl->setCurrentBlock('result');
 		$this->tpl->setVariable('RESULT_LINK', $resultLink);
-		$this->tpl->setVariable('RESULT_VALUE', $resultValue);				
+		$this->tpl->setVariable('RESULT_VALUE', $resultValue);
 		$this->tpl->setVariable('RESULT_CSSCLASS', $cssClass);
 		$this->tpl->parseCurrentBlock();
 	}
-	
+
 	private function populateNoLinkCell($resultValue, $cssClass)
 	{
 		$this->tpl->setCurrentBlock('result_nolink');
@@ -448,21 +503,25 @@ class ilTestOverviewTableGUI
 			if ($this->overview->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE)
 			{
 				$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+				$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
 			}
 			else
 			{
 				$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'));
+				$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_sum');
 			}
 		}
 
 		if($this->overview->getPointsColumn())
 		{
 			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points'));
+			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points');
 		}
 
 		if($this->overview->getAverageColumn())
 		{
 			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
 		}
 	}
 
@@ -491,6 +550,7 @@ class ilTestOverviewTableGUI
 
 			$this->tpl->setCurrentBlock('points');
 			$this->tpl->setVariable("POINTS_VALUE", $points );
+			$this->temp_results[] = $points;
 			$this->tpl->parseCurrentBlock();
 		}
 
@@ -507,6 +567,7 @@ class ilTestOverviewTableGUI
 
 			$this->tpl->setCurrentBlock('avg');
 			$this->tpl->setVariable("AVG_VALUE", $points );
+			$this->temp_results[] = $points;
 			$this->tpl->parseCurrentBlock();
 		}
 	}
@@ -535,6 +596,7 @@ class ilTestOverviewTableGUI
 		}
 		$this->tpl->setCurrentBlock('sum');
 		$this->tpl->setVariable("SUM_VALUE", $average . (is_numeric($average) ? "%" : ""));
+		$this->temp_results[] = $average . (is_numeric($average) ? "%" : "");
 		$this->tpl->parseCurrentBlock();
 	}
 
@@ -799,6 +861,22 @@ class ilTestOverviewTableGUI
 		$link = ilUtil::appendUrlParameterString($link, "active_id=$activeId");
 		
 		return $link;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getExportHeaderData()
+	{
+		return $this->export_header_data;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getExportRowData()
+	{
+		return $this->export_row_data;
 	}
 }
 

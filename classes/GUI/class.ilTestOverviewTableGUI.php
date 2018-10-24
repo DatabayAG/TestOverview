@@ -103,18 +103,24 @@ class ilTestOverviewTableGUI
 			}
 
 			$title_text = $this->overview->getTest($obj_id)->getTitle();
+			/** @var ilObjTest $test_object */
+			$test_object = $this->overview->getTest($obj_id);
+			$evaluation = $test_object->getCompleteEvaluationData(false);
+			$participants = $evaluation->getParticipants();
+			if(count($participants))
+			{
+				/** @var ilTestEvaluationUserData $participant */
+				$participant = current($participants);
+				$this->full_max = $this->full_max + $participant->getMaxpoints();
+			}
+
 			if($this->overview->getPointsColumn() && $this->overview->getHeaderPoints())
 			{
-				/** @var ilObjTest $test_object */
-				$test_object = $this->overview->getTest($obj_id);
-				$evaluation = $test_object->getCompleteEvaluationData(false);
-				$participants = $evaluation->getParticipants();
 				if(count($participants))
 				{
 					/** @var ilTestEvaluationUserData $participant */
 					$participant = current($participants);
 					$title_text .= ' (' . $participant->getMaxpoints() . ' ' . $this->lng->txt('points'). ')';
-					$this->full_max = $this->full_max + $participant->getMaxpoints();
 				}
 				else
 				{
@@ -130,7 +136,6 @@ class ilTestOverviewTableGUI
 		}
 
 		$this->setupEvaluationColumns();
-		// TODO: Add Toolbar Button for Excel Export
 
 		$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
 		$this->setRowTemplate('tpl.test_overview_row.html', $plugin->getDirectory());
@@ -518,7 +523,7 @@ class ilTestOverviewTableGUI
 			$points = "";
 			if($this->full_max > 0)
 			{
-				$points = " ( " . $this->full_max . " )";
+				$points = " (" . $this->full_max . " " . $this->lng->txt('points') . ")";
 			}
 			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points);
 			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points');
@@ -564,11 +569,11 @@ class ilTestOverviewTableGUI
 		{
 			if (count($results))
 			{
-				$points = sprintf("%.2f", (array_sum($results) / count($results)));
+				$points = sprintf("%.2f %%", (array_sum($results) / $this->full_max)*100);
 			}
 			else
 			{
-				$points = "";
+				$points = "0.00 %";
 			}
 
 			$this->tpl->setCurrentBlock('avg');

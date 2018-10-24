@@ -39,7 +39,7 @@ class ilTestOverviewTableGUI
 	 * @var \ilObjTestOverview
 	 */
 	protected $overview;
-
+	protected $full_max;
 	private $export_header_data;
 	private $export_row_data;
 
@@ -114,6 +114,7 @@ class ilTestOverviewTableGUI
 					/** @var ilTestEvaluationUserData $participant */
 					$participant = current($participants);
 					$title_text .= ' (' . $participant->getMaxpoints() . ' ' . $this->lng->txt('points'). ')';
+					$this->full_max = $this->full_max + $participant->getMaxpoints();
 				}
 				else
 				{
@@ -514,7 +515,12 @@ class ilTestOverviewTableGUI
 
 		if($this->overview->getPointsColumn())
 		{
-			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points'));
+			$points = "";
+			if($this->full_max > 0)
+			{
+				$points = " ( " . $this->full_max . " )";
+			}
+			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points);
 			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points');
 		}
 

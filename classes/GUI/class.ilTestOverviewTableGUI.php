@@ -526,7 +526,7 @@ class ilTestOverviewTableGUI
 				$points = " (" . $this->full_max . " " . $this->lng->txt('points') . ")";
 			}
 			$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points);
-			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points');
+			$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points;
 		}
 
 		if($this->overview->getAverageColumn())

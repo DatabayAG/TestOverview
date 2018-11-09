@@ -100,6 +100,7 @@ class ilObjTestOverviewGUI
 					case 'addMemberships':
 					case 'removeMemberships':
 					case 'editSettings':
+					case 'saveOrder':
 						$this->checkPermission('write');
 						$this->$cmd();
 						break;
@@ -930,5 +931,18 @@ class ilObjTestOverviewGUI
 		ilDesktopItemGUI::removeFromDesktop();
 		ilUtil::sendSuccess($lng->txt('removed_from_desktop'));
 		$this->showContent();
+	}
+
+	public function saveOrder()
+	{
+		global $ilTabs, $lng;
+		$ilTabs->activateTab('properties');
+		foreach ($_POST['order'] as $ref_id => $order_value)
+		{
+			$this->object->setTestOrderValueForRef($ref_id, $order_value);
+		}
+		$lng->loadLanguageModule('cntr');
+		ilUtil::sendSuccess($lng->txt('cntr_saved_sorting'));
+		$this->editSettings();
 	}
 }

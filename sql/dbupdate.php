@@ -180,3 +180,19 @@ if(!$ilDB->tableColumnExists('rep_robj_xtov_overview', 'header_points'))
 	);
 }
 ?>
+<#7>
+<?php
+if(!$ilDB->tableColumnExists('rep_robj_xtov_t2o', 'ordering'))
+{
+	$ilDB->addTableColumn(
+		'rep_robj_xtov_t2o',
+		'ordering',
+		array(
+			'type'    => 'integer',
+			'length'  => 4,
+			'notnull' => false,
+			'default' => 0
+		)
+	);
+}
+?>

@@ -59,11 +59,13 @@ class ilTestListTableGUI extends ilMappedTableGUI
 		$this->setRowTemplate('tpl.simple_object_row.html', $plugin->getDirectory());
 
 		$this->addColumn($this->lng->txt(''), '', '1px', true);
+		$this->addColumn('#', 'ordering', '20px');
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_list_hdr_test_title'), 'title');
 		$this->addColumn($this->lng->txt('rep_robj_xtov_test_list_hdr_test_info'), '');
 
 		$this->setDescription($this->lng->txt('rep_robj_xtov_test_list_description'));
 		$this->setFormAction($ilCtrl->getFormAction($this->getParentObject(), 'updateSettings'));
+		$this->addCommandButton('saveOrder', $this->lng->txt('sorting_save'));
 		$this->addCommandButton('initSelectTests', $this->lng->txt('rep_robj_xtov_add_tsts_to_overview'));
 		$this->addMultiCommand('removeTests', $this->lng->txt('rep_robj_xtov_remove_from_overview'));
 
@@ -103,6 +105,8 @@ class ilTestListTableGUI extends ilMappedTableGUI
     {
 		/* Configure template rendering. */
 		$this->tpl->setVariable('VAL_CHECKBOX', ilUtil::formCheckbox(false, 'test_ids[]', $item->ref_id));
+		$this->tpl->setVariable('VAL_ORDER_ID', 'order['.$item->ref_id.']' );
+		$this->tpl->setVariable('VAL_ORDERING', (int)$item->ordering);
 		$this->tpl->setVariable('OBJECT_TITLE', $item->title);
 		$this->tpl->setVariable('OBJECT_INFO', $this->getTestPath($item));
     }

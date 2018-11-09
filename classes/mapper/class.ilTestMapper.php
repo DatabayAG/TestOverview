@@ -23,7 +23,8 @@ class ilTestMapper extends ilDataMapper
 			'test_id',
 			'ref.ref_id',
 			'od.title',
-			'od.description'
+			'od.description',
+			'ordering'
 		);
 
 		return implode(', ', $fields);

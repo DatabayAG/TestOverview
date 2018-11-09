@@ -377,7 +377,7 @@ class ilObjTestOverview extends ilObjectPlugin
 			WHERE
 				t2o.obj_id_overview = %s
 				AND ref.deleted IS NULL
-			ORDER BY object.title ASC
+			ORDER BY ordering, object.title ASC
 			",
 			array('text', 'integer'),
 			array('tst', $this->getId()));
@@ -645,5 +645,20 @@ class ilObjTestOverview extends ilObjectPlugin
 	public function setHeaderPoints($header_points)
 	{
 		$this->header_points = $header_points;
+	}
+
+	public function setTestOrderValueForRef($ref_id, $order_value)
+	{
+		global $ilDB;
+		$ilDB->update(
+			'rep_robj_xtov_t2o',
+			array(
+				'ordering' => array('int', $order_value)
+			),
+			array(
+				'obj_id_overview' 	=> array('int', $this->obj_id),
+				'ref_id_test'		=> array('int', $ref_id)
+			)
+		);
 	}
 }

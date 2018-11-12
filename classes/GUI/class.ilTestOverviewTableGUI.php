@@ -569,7 +569,14 @@ class ilTestOverviewTableGUI
 		{
 			if (count($results))
 			{
-				$points = sprintf("%.2f %%", (array_sum($results) / $this->full_max)*100);
+				if($this->overview->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE)
+				{
+					$points = sprintf("%.2f %%", (array_sum($results) / count($results)));
+				}
+				else
+				{
+					$points = sprintf("%.2f %%", (array_sum($results) / $this->full_max)*100);
+				}
 			}
 			else
 			{

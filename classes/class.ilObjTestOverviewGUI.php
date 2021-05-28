@@ -9,16 +9,13 @@
 
 require_once 'Services/Repository/classes/class.ilObjectPluginGUI.php';
 require_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
-require_once 'Services/PersonalDesktop/interfaces/interface.ilDesktopItemHandling.php';
 
 /**
  * @ilCtrl_isCalledBy ilObjTestOverviewGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls      ilObjTestOverviewGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI, ilRepositorySearchGUI, ilPublicUserProfileGUI, ilCommonActionDispatcherGUI
  * @ilCtrl_Calls      ilObjTestOverviewGUI: ilTestEvaluationGUI, ilMDEditorGUI
  */
-class ilObjTestOverviewGUI
-	extends ilObjectPluginGUI
-	implements ilDesktopItemHandling
+class ilObjTestOverviewGUI extends ilObjectPluginGUI
 {
 	/**
 	 *	@var ilPropertyFormGUI
@@ -908,9 +905,13 @@ class ilObjTestOverviewGUI
 			return;
 		}
 
-		include_once './Services/PersonalDesktop/classes/class.ilDesktopItemGUI.php';
-		ilDesktopItemGUI::addToDesktop();
-		ilUtil::sendSuccess($lng->txt('added_to_desktop'));
+        $lng = $this->lng;
+        $ctrl = $this->ctrl;
+        $user = $this->user;
+        $this->favourites->add($user->getId(), (int) $_GET["item_ref_id"]);
+        $lng->loadLanguageModule("rep");
+        ilUtil::sendSuccess($lng->txt("rep_added_to_favourites"), true);
+
 		$this->showContent();
 	}
 
@@ -927,9 +928,13 @@ class ilObjTestOverviewGUI
 			return;
 		}
 
-		include_once './Services/PersonalDesktop/classes/class.ilDesktopItemGUI.php';
-		ilDesktopItemGUI::removeFromDesktop();
-		ilUtil::sendSuccess($lng->txt('removed_from_desktop'));
+        $lng = $this->lng;
+        $ctrl = $this->ctrl;
+        $user = $this->user;
+        $lng->loadLanguageModule("rep");
+        $this->favourites->remove($user->getId(), (int) $_GET["item_ref_id"]);
+        ilUtil::sendSuccess($lng->txt("rep_removed_from_favourites"), true);
+
 		$this->showContent();
 	}
 

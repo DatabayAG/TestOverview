@@ -21,6 +21,7 @@ class ilTestOverviewTestSelectionExplorer extends ilPasteIntoMultipleItemsExplor
 		$this->removeFormItemForType('grp');
 		$this->removeFormItemForType('cat');
 		$this->removeFormItemForType('fold');
+    $this->removeFormItemForType('lso');
 		$this->addFormItemForType('tst');
 		$this->addFilter('tst');
 	}

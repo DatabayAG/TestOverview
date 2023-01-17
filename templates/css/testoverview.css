@@ -28,14 +28,14 @@ td.result div.result, td.result a.result
 
 .orange-result
 {
-	background: #c30;
-	color: #fff;
+	background: #ffc100;
+	color: #000;
 }
 
 .green-result
 {
 	background: #0c0;
-	color: #000;
+	color: #fff;
 }
 
 .red-result, .red-result:hover

@@ -158,6 +158,7 @@ class ilTestOverviewTableGUI
 			$button->setUrl($ilCtrl->getLinkTarget($this->parent_obj, 'exportExcel'));
 			/** @var ilToolbarGUI $ilToolbar */
 			global $ilToolbar;
+            $ilToolbar->items = [];
 			$ilToolbar->addButtonInstance($button);
 		}
 	}
@@ -212,13 +213,18 @@ class ilTestOverviewTableGUI
 		$gname = new ilSelectInputGUI($this->lng->txt("rep_robj_xtov_overview_flt_group_name"), 'flt_group_name');
 		$gname->setOptions($groups);
 
+        $own = new ilCheckboxInputGUI($this->lng->txt("rep_robj_xtov_overview_flt_own"), 'flt_own');
+
 		/* Configure filter form */
         $this->addFilterItem($pname);
         $this->addFilterItem($gname);
+        $this->addFilterItem($own);
         $pname->readFromSession();
         $gname->readFromSession();
+        $own->readFromSession();
         $this->filter['flt_participant_name'] = $pname->getValue();
         $this->filter['flt_group_name']		  = $gname->getValue();
+        $this->filter['flt_own']		  = $own->getChecked();
     }
 
 	/**
@@ -389,7 +395,7 @@ class ilTestOverviewTableGUI
 	
 	private function fetchUserInformation($usr_ids)
 	{
-		global $ilDB;
+		global $ilDB, $ilUser;
 		
 		$usr_id__IN__usrIds = $ilDB->in('usr_id', $usr_ids, false, 'integer');
 		
@@ -423,6 +429,10 @@ class ilTestOverviewTableGUI
 					continue;
 				}
 			}
+
+            if(!empty($this->filter['flt_own']) && $this->filter['flt_own'] == true && $user->getId() != $ilUser->getId()) {
+                continue;
+            }
 			
 			$users[ $row['usr_id'] ] = $user;
 		}

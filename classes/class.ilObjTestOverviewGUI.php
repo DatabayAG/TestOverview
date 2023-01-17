@@ -100,6 +100,7 @@ class ilObjTestOverviewGUI
 					case 'addMemberships':
 					case 'removeMemberships':
 					case 'editSettings':
+					case 'initCourseTests':
 					case 'saveOrder':
 						$this->checkPermission('write');
 						$this->$cmd();
@@ -188,9 +189,16 @@ class ilObjTestOverviewGUI
 		$table->setMapper(new ilOverviewMapper)
 			  ->populate();
 
+        $legend = new ilTemplate("tpl.legend.html", TRUE, TRUE, "./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview");
+        $legend->setVariable('TXT_HEADER', $this->lng->txt('rep_robj_xtov_legend'));
+        $legend->setVariable('TXT_NOT_STARTED', $this->lng->txt('rep_robj_xtov_not_started'));
+        $legend->setVariable('TXT_IN_PROGRESS', $this->lng->txt('rep_robj_xtov_in_progress'));
+        $legend->setVariable('TXT_COMPLETED', $this->lng->txt('rep_robj_xtov_completed'));
+        $legend->setVariable('TXT_FAILED', $this->lng->txt('rep_robj_xtov_failed'));
+        $legend->parseCurrentBlock();
 		/* Populate template */
 		$tpl->setDescription($this->object->getDescription());
-		$tpl->setContent( $table->getHTML() );
+		$tpl->setContent( $table->getHTML() . $legend->get() );
 	}
 
 	/**
@@ -332,6 +340,48 @@ class ilObjTestOverviewGUI
 		$this->selectTests();
 		return;
 	}
+
+    public function initCourseTests()
+    {
+        /**
+         * @var $lng      ilLanguage
+         * @var $ilCtrl   ilCtrl
+         * @var $ilAccess ilAccessHandler
+         */
+        global $lng, $ilCtrl, $ilAccess, $tree;
+        $pnode = $tree->getParentNodeData((int)$_GET['ref_id']);
+        $otype = ilObject::_lookupType($pnode['ref_id'],true); // Parent node is 'crs'
+        $tsts = $tree->getFilteredSubTree($pnode['ref_id'], ['tst']);  // and has 'tst's
+
+        $refs = [];
+        foreach($tsts as $tst) {
+            $refs[] = $tst['child'];
+        }
+
+
+        $num_nodes = 0;
+        foreach($refs as $ref_id)
+        {
+            if($ilAccess->checkAccess('tst_statistics', '', $ref_id) || $ilAccess->checkAccess('write', '', $ref_id))
+            {
+                $this->object->addTest($ref_id);
+                ++$num_nodes;
+            }
+        }
+
+        if(!$num_nodes)
+        {
+            ilUtil::sendFailure($lng->txt('none_found'));
+            $this->selectTests();
+            return;
+        }
+
+        ilUtil::sendSuccess($this->txt('tests_updated_success'), true);
+        $ilCtrl->redirect($this, 'editSettings');
+
+        $this->editSettings();
+        return;
+    }
 
 	public function selectTests()
 	{

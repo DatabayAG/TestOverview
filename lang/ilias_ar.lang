@@ -66,3 +66,10 @@ enable_excel#:#Activate Excel Export
 test_overview_hdr_points#:#Achieved Points
 header_points#:#Display maximum possible points in title row
 header_points_info#:#The value shown is valid only, if the tests are configured in a way that always the same maximum number of points is possible to reach.
+overview_flt_own#:#Only Own Results
+legend#:#Legend
+not_started#:#Not started
+in_progress#:#In progress
+completed#:#Completed
+failed#:#Failed
+add_tsts_from_course#:#Add tests from course

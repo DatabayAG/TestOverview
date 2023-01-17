@@ -66,3 +66,10 @@ enable_excel#:#Excel Export aktivieren
 test_overview_hdr_points#:#Erreichte Punkte
 header_points#:#Maximale Anzahl Punkte für Tests in die Titelzeile aufnehmen
 header_points_info#:#Diese Angabe ist nur zutreffend, wenn die Tests so konfiguriert sind, dass immer die gleiche maximale Punktzahl erreichbar ist.
+overview_flt_own#:#Nur eigene Ergebnisse
+legend#:#Legende
+not_started#:#Nicht begonnen
+in_progress#:#In Bearbeitung
+completed#:#Bestanden
+failed#:#Nicht bestanden
+add_tsts_from_course#:#Tests aus Kurs hinzufügen

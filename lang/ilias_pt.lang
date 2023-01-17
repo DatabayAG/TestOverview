@@ -55,3 +55,10 @@ membership_count_members#:#Membros
 copy#:#Copiar
 overview_test_no_permission#:#(Sem permissão)
 add_tsts_to_overview#:#Adicionar testes à visão geral
+overview_flt_own#:#Only Own Results
+legend#:#Legend
+not_started#:#Not started
+in_progress#:#In progress
+completed#:#Completed
+failed#:#Failed
+add_tsts_from_course#:#Add tests from course

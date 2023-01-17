@@ -27,8 +27,9 @@ class ilTestListTableGUI extends ilMappedTableGUI
 	{
 		/**
 		 *	@var ilCtrl $ilCtrl
+         *  @var ilTree $tree
 		 */
-		global $ilCtrl;
+		global $ilCtrl, $tree;
 
 		/* Pre-configure table */
 		$this->setId(
@@ -67,7 +68,14 @@ class ilTestListTableGUI extends ilMappedTableGUI
 		$this->setFormAction($ilCtrl->getFormAction($this->getParentObject(), 'updateSettings'));
 		$this->addCommandButton('saveOrder', $this->lng->txt('sorting_save'));
 		$this->addCommandButton('initSelectTests', $this->lng->txt('rep_robj_xtov_add_tsts_to_overview'));
-		$this->addMultiCommand('removeTests', $this->lng->txt('rep_robj_xtov_remove_from_overview'));
+
+        $pnode = $tree->getParentNodeData((int)$_GET['ref_id']);
+        $otype = ilObject::_lookupType($pnode['ref_id'],true); // Parent node is 'crs'
+        $tsts = $tree->getFilteredSubTree($pnode['ref_id'], ['tst']);  // and has 'tst's
+        if($otype == 'crs' && count($tsts) > 0) {
+            $this->addCommandButton('initCourseTests', $this->lng->txt('rep_robj_xtov_add_tsts_from_course'));
+        }
+        $this->addMultiCommand('removeTests', $this->lng->txt('rep_robj_xtov_remove_from_overview'));
 
 		$this->setShowRowsSelector(true);
 		$this->setSelectAllCheckbox('test_ids[]');

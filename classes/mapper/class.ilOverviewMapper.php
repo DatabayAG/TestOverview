@@ -120,4 +120,103 @@ class ilOverviewMapper
 
 		return $data;
 	}
+
+    /**
+     *    Fetch a list of entries from the database.
+     *
+     *    The getList() method can be used to retrieve a collection
+     *    of entries saved in the database in a given table.
+     *
+     * @params    array    $params Possible parameters indexes include:
+     *                             - limit    [~numeric]
+     *                             - offset    [~numeric]
+     *                             - order_field        [~string]
+     *                             - order_direction    [=ASC|DESC]
+     *                             - group    [~string]
+     *
+     * @param array $params
+     * @param array $filters
+     * @throws InvalidArgumentException
+     * @return array with indexes 'items' and 'cnt'.
+     */
+    public function getList( array $params = array(), array $filters = array() )
+    {
+        $data = array(
+            'items' => array(),
+            'cnt'   => 0
+        );
+
+        $select = $this->getSelectPart();
+        $where  = $this->getWherePart($filters);
+        $from   = $this->getFromPart();
+        $order  = "";
+        $group  = "";
+        $limit  = "";
+
+        /* Build ORDER BY
+        if (isset($params['order_field'])) {
+            if (! is_string($params['order_field']))
+                throw new InvalidArgumentException("Please provide a valid order field.");
+
+            if (! isset($params['order_direction']))
+                /* Defaulting to ASC(ending) order.*/ /*
+                $params['order_direction'] = "ASC";
+            elseif (! in_array(strtolower($params['order_direction']),array("asc", "desc")) )
+                throw new InvalidArgumentException("Please provide a valid order direction.");
+
+            $order = $params['order_field'] . ' ' . $params['order_direction'];
+        }
+        */
+
+        /* Build GROUP BY */
+        if (isset($params['group'])) {
+            if (! is_string($params['group']))
+                throw new InvalidArgumentException("Please provide a valid group field parameter.");
+
+            $group = $params['group'];
+        }
+
+        /* Build LIMIT */
+        if (isset($params['limit'])) {
+            if (! is_numeric($params['limit']))
+                throw new InvalidArgumentException("Please provide a valid numerical limit.");
+
+            if (! isset($params['offset']))
+                $params['offset'] = 0;
+            elseif (! is_numeric($params['offset']))
+                throw new InvalidArgumentException("Please provide a valid numerical offset.");
+
+            $this->db->setLimit($params['limit'], $params['offset']);
+        }
+
+        /* Build SQL query */
+        $query = "
+			SELECT
+				$select
+			FROM
+				$from
+			WHERE
+				$where
+		";
+
+        if (! empty($group))
+            $query .= " GROUP BY $group";
+        if (! empty($order))
+            $query .= " ORDER BY $order";
+
+        /* Execute query and fetch items. */
+        $result = $this->db->query($query);
+        while ($row = $this->db->fetchObject($result))
+            $data['items'][] = $row;
+
+        if( isset($params['limit']) )
+        {
+            /* Fill 'cnt' with total count of items */
+            $cntSQL = "SELECT COUNT(*) cnt FROM ($query) subquery";
+            $rowCnt = $this->db->fetchAssoc($this->db->query($cntSQL));
+            $data['cnt'] = $rowCnt['cnt'];
+        }
+        return $data;
+    }
+
 }

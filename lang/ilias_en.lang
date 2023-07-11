@@ -42,6 +42,7 @@ min_one_check_membership#:#Please select at least one group or course.
 tests_updated_success#:#Updated successfully.
 min_one_check_test#:#Please select at least one test.
 test_overview_hdr_user#:#Participant
+test_overview_hdr_login#:#Login
 test_overview_hdr_avg#:#Average
 test_overview_description#:#This table shows test results of participants, filtered by certain group or course memberships.
 overview_test_not_passed#:#Not passed
@@ -73,3 +74,5 @@ in_progress#:#In progress
 completed#:#Completed
 failed#:#Failed
 add_tsts_from_course#:#Add tests from course
+test_overview_hdr_firstname#:#Firstname
+test_overview_hdr_lastname#:#Lastname

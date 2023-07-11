@@ -42,6 +42,7 @@ min_one_check_membership#:#Bitte wählen Sie mindestens ein Gruppen- oder Kurs-O
 tests_updated_success#:#Die Einstellungen wurden erfolgreich aktualisiert.
 min_one_check_test#:#Bitte wählen Sie mindestens einen Test.
 test_overview_hdr_user#:#Teilnehmer
+test_overview_hdr_login#:#Login
 test_overview_hdr_avg#:#Durchschnitt
 test_overview_description#:#Diese Tabelle zeigt Teilnehmerergebnisse von vorgegebenen Tests, gefiltert nach ausgewählten Gruppen- oder Kursmitgliedschaften der Teilnehmer.
 overview_test_not_passed#:#Nicht teilgenommen
@@ -73,3 +74,5 @@ in_progress#:#In Bearbeitung
 completed#:#Bestanden
 failed#:#Nicht bestanden
 add_tsts_from_course#:#Tests aus Kurs hinzufügen
+test_overview_hdr_firstname#:#Vorname
+test_overview_hdr_lastname#:#Nachname

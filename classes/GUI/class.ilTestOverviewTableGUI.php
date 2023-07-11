@@ -60,8 +60,14 @@ class ilTestOverviewTableGUI
 		$this->setId(sprintf(
 			"test_overview_%d", $a_parent_obj->object->getId()));
 
+        $this->sortable_fields = array(
+            'firstname',
+            'lastname',
+            'login',
+        );
+
 		$this->setDefaultOrderDirection('ASC');
-		$this->setDefaultOrderField('obj_id');
+		$this->setDefaultOrderField('lastname');
 		
 		// ext ordering with db is ok, but ext limiting with db is not possible,
 		// since the rbac filtering is downstream to the db query
@@ -76,8 +82,12 @@ class ilTestOverviewTableGUI
 
 		$this->overview = $this->getParentObject()->object;
 
-		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_user'));
-		$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_user');
+		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_firstname'),'firstname');
+		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_lastname'), 'lastname');
+		$this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_login'), 'login');
+		$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_firstname');
+		$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_lastname');
+		$this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_login');
 
 		foreach( $this->overview->getUniqueTests() as $obj_id => $refs )
 		{
@@ -274,12 +284,12 @@ class ilTestOverviewTableGUI
 							$result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
 						}
 					}
-					$results[]  = $result;
+					$results[]  = $result . '##'. $this->getCSSByTestResult($testResult, $activeId, $obj_id) . '##';
 				}
 				else
 				{
 					$result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
-					$results[]  = 0;
+					$results[]  = 0 . "##no-result##";
 				}
 
 				if ($activeId > 0)
@@ -309,7 +319,9 @@ class ilTestOverviewTableGUI
 
 		$row_data = array();
 		$row_data[] = $row['member_fullname'];
-		foreach($results as $item)
+        $user = new ilObjUser($row['member_id']);
+		$row_data[] = $user->getLogin();
+        foreach($results as $item)
 		{
 			$row_data[] = $item;
 		}
@@ -320,7 +332,9 @@ class ilTestOverviewTableGUI
 		$this->export_row_data[] = $row_data;
 		$this->temp_results = array();
 
-		$this->tpl->setVariable('TEST_PARTICIPANT', $row['member_fullname']);
+		$this->tpl->setVariable('TEST_PARTICIPANT_FIRSTNAME', $user->getFirstname());
+		$this->tpl->setVariable('TEST_PARTICIPANT_LASTNAME', $user->getLastname());
+		$this->tpl->setVariable('TEST_LOGIN', $user->getLogin());
     }
 
 	private function populateLinkedCell($resultLink, $resultValue, $cssClass)
@@ -400,7 +414,7 @@ class ilTestOverviewTableGUI
 		$usr_id__IN__usrIds = $ilDB->in('usr_id', $usr_ids, false, 'integer');
 		
 		$query = "
-			SELECT usr_id, title, firstname, lastname FROM usr_data WHERE $usr_id__IN__usrIds
+			SELECT usr_id, login, title, firstname, lastname FROM usr_data WHERE $usr_id__IN__usrIds
 		";
 		
 		$res = $ilDB->query($query);
@@ -412,6 +426,7 @@ class ilTestOverviewTableGUI
 			$user = new ilObjUser();
 			
 			$user->setId($row['usr_id']);
+            $user->setLogin($row['login']);
 			$user->setUTitle($row['title']);
 			$user->setFirstname($row['firstname']);
 			$user->setLastname($row['lastname']);
@@ -709,19 +724,35 @@ class ilTestOverviewTableGUI
 	 */
 	protected function sortByFullName( array $data )
 	{
+        // ...or others.
+        $order_field = $this->getOrderField();
+        $order_direction = $this->getOrderDirection();
+
 		$azList = array();
 		$sorted = array(
 			'cnt'   => $data['cnt'],
 			'items' => array());
 
 		/* Initialize partition array. */
-		for ($az = 'A'; $az <= 'Z'; $az++)
-			$azList[$az] = array();
+        for ($az = 'A'; $az <= 'Z'; $az++) {
+            $azList[$az] = array();
+        }
+
+        if($order_direction === 'desc') {
+            krsort($azList);
+        }
 
 		/* Partition data. */
 		foreach ($data['items'] as $userObj) {
-			$name = $userObj->getFullName();
-			$azList[$name{0}][] = $userObj;
+            if($order_field === 'lastname') {
+                $name = $userObj->getLastname();
+            } else if ($order_field === 'firstname') {
+                $name = $userObj->getFirstname();
+            } else {
+                $name = $userObj->getLogin();
+            }
+
+			$azList[strtoupper($name{0})][] = $userObj;
 		}
 
 		/* Group all results. */
@@ -920,5 +951,74 @@ class ilTestOverviewTableGUI
 	{
 		return $this->export_row_data;
 	}
+
+    /**
+     *    Populate the TableGUI using the Mapper.
+     *
+     *    The populate() method should be called
+     *    to fill the overview table with data.
+     *    The getList() method is called on the
+     *    registered mapper instance. The formatData()
+     *    method should be overloaded to handle specific
+     *    cases of displaying or ordering rows.
+     *
+     * @throws ilException
+     * @return ilMappedTableGUI
+     */
+    public function populate()
+    {
+        if( $this->getExternalSegmentation() && $this->getExternalSorting() )
+        {
+            $this->determineOffsetAndOrder();
+        }
+        elseif( !$this->getExternalSegmentation() && $this->getExternalSorting() )
+        {
+            $this->determineOffsetAndOrder(true);
+        }
+        else
+        {
+            throw new ilException('invalid table configuration: extSort=false / extSegm=true');
+        }
+
+        /* Configure query execution */
+        $params = array();
+        if( $this->getExternalSegmentation() )
+        {
+            $params['limit'] = $this->getLimit();
+            $params['offset'] = $this->getOffset();
+        }
+        if( $this->getExternalSorting() )
+        {
+            $params['order_field'] = $this->getOrderField();
+            $params['order_direction'] = $this->getOrderDirection();
+        }
+
+        $overview = $this->getParentObject()->object;
+        $filters  = array("overview_id" => $overview->getId()) + $this->filter;
+
+        /* Execute query. */
+        $data = $this->getMapper()
+                     ->getList($params, $filters);
+
+        if( !count($data['items']) && $this->getOffset() > 0) {
+            /* Query again, offset was incorrect. */
+            $this->resetOffset();
+            $data = $this->getMapper()
+                         ->getList($params, $filters);
+        }
+
+        /* Post-query logic. Implement custom sorting or display
+           in formatData overload. */
+        $data = $this->formatData($data);
+
+        $this->setData( $this->buildTableRowsArray($data['items']) );
+
+        if( $this->getExternalSegmentation() )
+        {
+            $this->setMaxCount($data['cnt']);
+        }
+
+        return $this;
+    }
 }
 

@@ -85,7 +85,27 @@ class ilTestOverviewExcelExporter
 			{
 				$value = implode(', ', $value);
 			}
-			$a_excel->setCell($row, $col++, $value);
+            $col++;
+
+
+            $color = "FFFFFF";
+            if(str_replace("##no-result##", '', $value) !== $value) {
+                $color = "999999";
+            } else if (str_replace('##red-result##', '', $value) !== $value) {
+                $color = "FF0000";
+            } else if (str_replace('##green_result##', '', $value) !== $value) {
+                $color = "00CC00";
+            } else if (str_replace('##yellow-result##', '', $value) !== $value) {
+                $color = "FFC100";
+            }else if (str_replace('##orange-result##', '', $value) !== $value) {
+                $color = "FFC100";
+            }
+            $value = str_replace(['##no-result##', '##red-result##', '##green-result##', '##yellow-result##', '##orange-result##'], '', $value);
+
+            $a_excel->setCell($row, $col-1, $value);
+            if($color !== "FFFFFF") {
+                $a_excel->setColors($a_excel->getCoordByColumnAndRow($col - 1, $row), $color);
+            }
 		}
 	}
 }

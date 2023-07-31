@@ -318,8 +318,9 @@ class ilTestOverviewTableGUI
 		$this->populateEvaluationColumns($results, $reached_points, $max_points);
 
 		$row_data = array();
-		$row_data[] = $row['member_fullname'];
         $user = new ilObjUser($row['member_id']);
+        $row_data[] = $user->getFirstname();
+        $row_data[] = $user->getLastname();
 		$row_data[] = $user->getLogin();
         foreach($results as $item)
 		{
@@ -915,7 +916,8 @@ class ilTestOverviewTableGUI
 		{
 			$rows[] = array(
 				'member_id' => $member->getId(),
-				'member_fullname' => $member->getFullName()
+				'member_firstname' => $member->getFirstname(),
+				'member_lastname' => $member->getLastname()
 			);
 		}
 		

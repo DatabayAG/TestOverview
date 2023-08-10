@@ -1,95 +1,100 @@
 <?php
-/* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
+
+declare(strict_types=1);
+
+/**
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
+ *
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ *********************************************************************/
 
 /**
  *	@package	TestOverview repository plugin
  *	@category	Core
  *	@author		Greg Saive <gsaive@databay.de>
  */
-
-/* Internal : */
-require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview')
-				->getDirectory() . '/classes/mapper/class.ilDataMapper.php';
-
-class ilOverviewMapper
-	extends ilDataMapper
+class ilOverviewMapper extends ilDataMapper
 {
-	/**
-	 *	@var string
-	 */
-	protected $tableName = "rep_robj_xtov_overview overview";
+    protected string $tableName = "rep_robj_xtov_overview overview";
 
-	/**
-	 *	@see ilDataMapper::getSelectPart()
-	 */
-	public function getSelectPart()
-	{
-		$fields = array(
-			"participants.obj_id_grpcrs obj_id",);
+    /**
+     *	@see ilDataMapper::getSelectPart()
+     */
+    protected function getSelectPart(): string
+    {
+        $fields = array(
+            "participants.obj_id_grpcrs obj_id",);
 
-		return implode(', ', $fields);
-	}
+        return implode(', ', $fields);
+    }
 
-	/**
-	 *	@see ilDataMapper::getFromPart()
-	 */
-	public function getFromPart()
-	{
-		$joins = array(
-			"JOIN rep_robj_xtov_p2o participants
+    /**
+     *	@see ilDataMapper::getFromPart()
+     */
+    protected function getFromPart(): string
+    {
+        $joins = array(
+            "JOIN rep_robj_xtov_p2o participants
 				ON (overview.obj_id = participants.obj_id_overview)",);
 
-		return $this->tableName . " " . implode(' ', $joins);
-	}
+        return $this->tableName . " " . implode(' ', $joins);
+    }
 
-	/**
-	 *	@see ilDataMapper::getWherePart()
-	 */
-	public function getWherePart(array $filters)
-	{
-		$conditions = array("1 = 1");
+    /**
+     *	@see ilDataMapper::getWherePart()
+     */
+    protected function getWherePart(array $filters): string
+    {
+        $conditions = array("1 = 1");
 
-		if (! empty($filters['overview_id'])) {
-			$conditions[] = sprintf(
-				"overview.obj_id = " . $this->db->quote($filters['overview_id'], 'integer'));
-		}
+        if (! empty($filters['overview_id'])) {
+            $conditions[] = "overview.obj_id = " . $this->db->quote($filters['overview_id'], 'integer');
+        }
 
-		return implode(' AND ', $conditions);
-	}
+        return implode(' AND ', $conditions);
+    }
 
-	/**
-	 *	Get pairs of Participants groups.
-	 *
-	 *	This method can be used to list groups in a
-	 *	HTML <select>. The index in the returned array
-	 *	corresponds to the groups' obj_id and the value
-	 *	is the groups' title.
-	 *
-	 *	@param	integer	$overviewId
-	 *	@return array	Where index = obj_id and value = group title
-	 */
-	public function getGroupPairs($overviewId)
-	{
-		$pairs   = array();
-		$rawData = $this->getList(array(), array("overview_id" => $overviewId));
-		foreach ($rawData['items'] as $item) {
-			$object = ilObjectFactory::getInstanceByObjId($item->obj_id, false);
-			$pairs[$item->obj_id] = $object->getTitle();
-		}
+    /**
+     *	Get pairs of Participants groups.
+     *
+     *	This method can be used to list groups in a
+     *	HTML <select>. The index in the returned array
+     *	corresponds to the groups' obj_id and the value
+     *	is the groups' title.
+     *
+     *	@param	integer	$overviewId
+     *	@return array	Where index = obj_id and value = group title
+     */
+    public function getGroupPairs($overviewId): array
+    {
+        $pairs   = array();
+        $rawData = $this->getList(array(), array("overview_id" => $overviewId));
+        foreach ($rawData['items'] as $item) {
+            $object = ilObjectFactory::getInstanceByObjId((int)$item->obj_id, false);
+            if($object !== null) {
+                $pairs[$item->obj_id] = $object->getTitle();
+            }
+        }
 
-		return $pairs;
-	}
+        return $pairs;
+    }
 
-	/**
-	 * @param array $obj_ids
-	 * @return array
-	 */
-	public function getUniqueTestParticipants(array $obj_ids)
-	{
-		$in_tst_std   = $this->db->in('tst_std.obj_fi', $obj_ids, false, 'integer');
-		$in_tst_fixed = $this->db->in('tst_fixed.obj_fi', $obj_ids, false, 'integer');
+    public function getUniqueTestParticipants(array $obj_ids): array
+    {
+        $in_tst_std   = $this->db->in('tst_std.obj_fi', $obj_ids, false, 'integer');
+        $in_tst_fixed = $this->db->in('tst_fixed.obj_fi', $obj_ids, false, 'integer');
 
-		$query   = "
+        $query   = "
 			(SELECT act.user_fi
 			FROM tst_tests tst_std
 			INNER JOIN object_data ON object_data.obj_id = tst_std.obj_fi AND object_data.type = 'tst'
@@ -108,18 +113,17 @@ class ilOverviewMapper
 				ON ud_fixed.usr_id = inv.user_fi
 			WHERE $in_tst_fixed)
 			";
-		$res     = $this->db->query($query);
-		$usr_ids = array();
-		while($row = $this->db->fetchAssoc($res))
-		{
-			$usr_ids[] = (int)$row['user_fi'];
-		}
+        $res     = $this->db->query($query);
+        $usr_ids = array();
+        while($row = $this->db->fetchAssoc($res)) {
+            $usr_ids[] = (int)$row['user_fi'];
+        }
 
-		$data        = array('items' => array_unique($usr_ids));
-		$data['cnt'] = 0;
+        $data        = array('items' => array_unique($usr_ids));
+        $data['cnt'] = 0;
 
-		return $data;
-	}
+        return $data;
+    }
 
     /**
      *    Fetch a list of entries from the database.
@@ -134,12 +138,10 @@ class ilOverviewMapper
      *                             - order_direction    [=ASC|DESC]
      *                             - group    [~string]
      *
-     * @param array $params
-     * @param array $filters
      * @throws InvalidArgumentException
      * @return array with indexes 'items' and 'cnt'.
      */
-    public function getList( array $params = array(), array $filters = array() )
+    public function getList(array $params = array(), array $filters = array()): array
     {
         $data = array(
             'items' => array(),
@@ -170,21 +172,24 @@ class ilOverviewMapper
 
         /* Build GROUP BY */
         if (isset($params['group'])) {
-            if (! is_string($params['group']))
+            if (! is_string($params['group'])) {
                 throw new InvalidArgumentException("Please provide a valid group field parameter.");
+            }
 
             $group = $params['group'];
         }
 
         /* Build LIMIT */
         if (isset($params['limit'])) {
-            if (! is_numeric($params['limit']))
+            if (! is_numeric($params['limit'])) {
                 throw new InvalidArgumentException("Please provide a valid numerical limit.");
+            }
 
-            if (! isset($params['offset']))
+            if (! isset($params['offset'])) {
                 $params['offset'] = 0;
-            elseif (! is_numeric($params['offset']))
+            } elseif (! is_numeric($params['offset'])) {
                 throw new InvalidArgumentException("Please provide a valid numerical offset.");
+            }
 
             $this->db->setLimit($params['limit'], $params['offset']);
         }
@@ -199,18 +204,20 @@ class ilOverviewMapper
 				$where
 		";
 
-        if (! empty($group))
+        if (! empty($group)) {
             $query .= " GROUP BY $group";
-        if (! empty($order))
+        }
+        if (! empty($order)) {
             $query .= " ORDER BY $order";
+        }
 
         /* Execute query and fetch items. */
         $result = $this->db->query($query);
-        while ($row = $this->db->fetchObject($result))
+        while ($row = $this->db->fetchObject($result)) {
             $data['items'][] = $row;
+        }
 
-        if( isset($params['limit']) )
-        {
+        if(isset($params['limit'])) {
             /* Fill 'cnt' with total count of items */
             $cntSQL = "SELECT COUNT(*) cnt FROM ($query) subquery";
             $rowCnt = $this->db->fetchAssoc($this->db->query($cntSQL));

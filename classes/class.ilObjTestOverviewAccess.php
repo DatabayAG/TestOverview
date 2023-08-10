@@ -1,41 +1,27 @@
 <?php
-/* Copyright (c) 1998-2012 ILIAS open source, Extended GPL, see docs/LICENSE */
 
+declare(strict_types=1);
+
+/**
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
+ *
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ *********************************************************************/
 /**
  *	@package	TestOverview repository plugin
  *	@category	RBAC
  *	@author		Greg Saive <gsaive@databay.de>
  */
-
-require_once 'Services/Repository/classes/class.ilObjectPluginAccess.php';
-
-class ilObjTestOverviewAccess
-	extends ilObjectPluginAccess
+class ilObjTestOverviewAccess extends ilObjectPluginAccess
 {
-	/**
-	 * @param string $a_cmd
-	 * @param string $a_permission
-	 * @param int    $a_ref_id
-	 * @param int    $a_obj_id
-	 * @param string $a_user_id
-	 * @return bool
-	 */
-	public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = '')
-	{
-		/**
- 		 * @var $ilUser ilObjUser
-		 */
-		global $ilUser;
-
-		if(!$a_user_id) {
-			$a_user_id = $ilUser->getId();
-		}
-
-		switch($a_permission) {
-			case 'read':
-				return true;
-		}
-
-		return true;
-	}
 }

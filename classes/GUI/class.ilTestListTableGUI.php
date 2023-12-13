@@ -52,7 +52,7 @@ class ilTestListTableGUI extends ilMappedTableGUI
         /* Pre-configure table */
         $this->setId(
             sprintf(
-                'test_overview_test_list_%d',
+                'xtov_tst_lst_%d',
                 $a_parent_obj->getObject()->getId()
             )
         );

@@ -404,10 +404,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $user = new ilObjUser();
 
             $user->setId((int)$row['usr_id']);
-            $user->setLogin($row['login']);
-            $user->setUTitle($row['title']);
-            $user->setFirstname($row['firstname']);
-            $user->setLastname($row['lastname']);
+            $user->setLogin((string) $row['login']);
+            $user->setUTitle((string) $row['title']);
+            $user->setFirstname((string) $row['firstname']);
+            $user->setLastname((string) $row['lastname']);
             $user->setFullname();
 
             if (! empty($this->filter['flt_participant_name'])) {

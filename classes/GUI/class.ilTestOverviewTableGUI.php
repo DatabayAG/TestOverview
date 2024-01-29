@@ -844,7 +844,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         global $ilCtrl;
 
         $link = $ilCtrl->getLinkTargetByClass(
-            array('ilObjTestOverviewGUI', 'ilobjtestgui', 'iltestevaluationgui'),
+            array('ilobjtestgui', 'iltestevaluationgui'),
             'outParticipantsPassDetails'
         );
 

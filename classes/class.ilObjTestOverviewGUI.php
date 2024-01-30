@@ -244,7 +244,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
         $num_nodes = 0;
         foreach($refs as $ref_id) {
-            if($this->access->checkAccess('tst_statistics', '', $ref_id) || $this->access->checkAccess('write', '', $ref_id)) {
+            if($this->access->checkAccess('tst_statistics', '', (int) $ref_id) || $this->access->checkAccess('write', '', (int) $ref_id)) {
                 $this->object->addTest($ref_id);
                 ++$num_nodes;
             }

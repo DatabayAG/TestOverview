@@ -747,7 +747,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 include_once("./Services/UIComponent/Tooltip/classes/class.ilTooltipGUI.php");
                 ilTooltipGUI::addTooltip("thc_" . $this->getId() . "_" . $ccnt, $column["tooltip"]);
             }
-            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !$column['link']) {
+            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && (!isset($column['link']) || !$column['link'])) {
                 $this->tpl->setCurrentBlock("tbl_header_no_link");
                 if ($column["width"] != "") {
                     $this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK", " width=\"" . $column["width"] . "\"");
@@ -803,7 +803,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             if ($column["class"] != "") {
                 $this->tpl->setVariable("TBL_HEADER_CLASS", " " . $column["class"]);
             }
-            if($column['link']) {
+            if(isset($column['link']) {
                 $this->setExternalLink($column['link']);
             } else {
                 $this->setOrderLink($column["sort_field"], $order_dir);

@@ -749,10 +749,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             }
             if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !$column['link']) {
                 $this->tpl->setCurrentBlock("tbl_header_no_link");
-                if ($column["width"] != "") {
+                if (isset($column['width']) && $column["width"] != "") {
                     $this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK", " width=\"" . $column["width"] . "\"");
                 }
-                if (!$column["is_checkbox_action_column"]) {
+                if (!isset($column["is_checkbox_action_column"])) {
                     $this->tpl->setVariable(
                         "TBL_HEADER_CELL_NO_LINK",
                         $column["text"]
@@ -765,14 +765,14 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 }
                 $this->tpl->setVariable("HEAD_CELL_NL_ID", "thc_" . $this->getId() . "_" . $ccnt);
 
-                if ($column["class"] != "") {
+                if (isset($column['class']) && $column["class"] != "") {
                     $this->tpl->setVariable("TBL_HEADER_CLASS", " " . $column["class"]);
                 }
                 $this->tpl->parseCurrentBlock();
                 $this->tpl->touchBlock("tbl_header_th");
                 continue;
             }
-            if (($column["sort_field"] == $this->order_field) && ($this->order_direction != "")) {
+            if (isset($column['sort_field']) && ($column["sort_field"] == $this->order_field) && ($this->order_direction != "")) {
                 $this->tpl->setCurrentBlock("tbl_order_image");
                 $this->tpl->setVariable("IMG_ORDER_DIR", ilUtil::getImagePath($this->order_direction . "_order.png"));
                 $this->tpl->setVariable("IMG_ORDER_ALT", $this->lng->txt("change_sort_direction"));
@@ -784,7 +784,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $this->tpl->setVariable("HEAD_CELL_ID", "thc_" . $this->getId() . "_" . $ccnt);
 
             // only set width if a value is given for that column
-            if ($column["width"] != "") {
+            if (isset($column["width"]) && $column["width"] != "") {
                 $this->tpl->setVariable("TBL_COLUMN_WIDTH", " width=\"" . $column["width"] . "\"");
             }
 
@@ -793,17 +793,17 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
             $order_dir = "asc";
 
-            if ($column["sort_field"] == $this->order_field) {
+            if (isset($colum['sort_field']) && $column["sort_field"] == $this->order_field) {
                 $order_dir = $this->sort_order;
 
                 $lng_change_sort = $this->lng->txt("change_sort_direction");
                 $this->tpl->setVariable("TBL_ORDER_ALT", $lng_change_sort);
             }
 
-            if ($column["class"] != "") {
+            if (isset($column["class"]) && $column['class'] != "") {
                 $this->tpl->setVariable("TBL_HEADER_CLASS", " " . $column["class"]);
             }
-            if($column['link']) {
+            if(isset($column['link'])) {
                 $this->setExternalLink($column['link']);
             } else {
                 $this->setOrderLink($column["sort_field"], $order_dir);

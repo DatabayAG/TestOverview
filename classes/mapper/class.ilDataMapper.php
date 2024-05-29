@@ -85,8 +85,11 @@ abstract class ilDataMapper
 		";
         $res  = $this->db->query($query);
         $row  = $this->db->fetchObject($res);
+        if ($row === null) {
+            return "";
+        }
 
-        return $row->{strtolower($field)} || $row->{strtoupper($field)} ;
+        return $row->{strtolower($field)} ?? ($row->{strtoupper($field)} ?? '');
     }
 
     /**

@@ -747,7 +747,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 include_once("./Services/UIComponent/Tooltip/classes/class.ilTooltipGUI.php");
                 ilTooltipGUI::addTooltip("thc_" . $this->getId() . "_" . $ccnt, $column["tooltip"]);
             }
-            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !$column['link']) {
+            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !array_key_exists('link',$column)) {
                 $this->tpl->setCurrentBlock("tbl_header_no_link");
                 if (isset($column['width']) && $column["width"] != "") {
                     $this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK", " width=\"" . $column["width"] . "\"");

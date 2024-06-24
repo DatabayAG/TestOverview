@@ -117,7 +117,7 @@ class ilMembershipListTableGUI extends ilMappedTableGUI
         $this->tpl->setVariable('ID_COL', 'membership_ids[]');
         $this->tpl->setVariable('OBJECT_TITLE', $a_set->title);
         $this->tpl->setVariable('OBJECT_INFO', sprintf("%d %s", $members, $label));
-        $this->tpl->setVariable('OBJECT_IMG_PATH', $this->isAddedContainer($a_set) ? ilUtil::getImagePath('icon_ok.svg') : ilUtil::getImagePath('icon_not_ok.svg'));
+        $this->tpl->setVariable('OBJECT_IMG_PATH', $this->isAddedContainer($a_set) ?'icon_ok.svg' : 'icon_not_ok.svg');
     }
 
     private function isAddedContainer(stdClass $container): bool

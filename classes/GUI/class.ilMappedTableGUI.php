@@ -146,10 +146,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
      */
     protected function getMembersObject(stdClass $container)
     {
-        $type = $container->type;
-        if($type == '') {
-            $type = $this->objectDataCache->lookupType((int)$container->obj_id);
-        }
+        $type = property_exists($container,'type') ? $container->type : $this->objectDataCache->lookupType((int)$container->obj_id);
 
         switch ($type) {
             case "grp":

@@ -257,12 +257,11 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
             $testResult = null;
             global $ilUser;
+            $testResult    = $test->getTestResult($activeId);
             if($this->accessIndex[$obj_id] || ($this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
-                $testResult    = $test->getTestResult($activeId);
-                $max_points = $max_points + $testResult['pass']['total_max_points'];
-                $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
-
-                if (strlen($testResult['pass']['percent'])) {
+                if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
+                    $max_points = $max_points + $testResult['pass']['total_max_points'];
+                    $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
                     if($this->parent_obj->getObject()->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
                         $result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
                     } else {
@@ -747,7 +746,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 include_once("./Services/UIComponent/Tooltip/classes/class.ilTooltipGUI.php");
                 ilTooltipGUI::addTooltip("thc_" . $this->getId() . "_" . $ccnt, $column["tooltip"]);
             }
-            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !$column['link']) {
+            if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !array_key_exists('link',$column)) {
                 $this->tpl->setCurrentBlock("tbl_header_no_link");
                 if (isset($column['width']) && $column["width"] != "") {
                     $this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK", " width=\"" . $column["width"] . "\"");
@@ -760,7 +759,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 } else {
                     $this->tpl->setVariable(
                         "TBL_HEADER_CELL_NO_LINK",
-                        ilUtil::img(ilUtil::getImagePath("spacer.png"), $lng->txt("action"))
+                        '&nbsp;&nbsp;'. $lng->txt("action")
                     );
                 }
                 $this->tpl->setVariable("HEAD_CELL_NL_ID", "thc_" . $this->getId() . "_" . $ccnt);

@@ -36,6 +36,21 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
      */
     protected $form;
 
+    private function fillCloneTemplate(?string $tpl_name, string $type): ?ilPropertyFormGUI
+    {
+        $cp = new ilObjectCopyGUI($this);
+        $cp->setType($type);
+        $target = $this->request_wrapper->has("ref_id")
+            ? $this->request_wrapper->retrieve("ref_id", $this->refinery->kindlyTo()->int())
+            : 0;
+        $cp->setTarget($target);
+        if ($tpl_name) {
+            $cp->showSourceSearch($tpl_name);
+        }
+
+        return $cp->showSourceSearch(null);
+    }
+
     public function getType(): string
     {
         return 'xtov';
@@ -273,7 +288,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $exp->setPostVar('nodes[]');
         $exp->highlightNode((string) $this->request->getQueryParams()['ref_id']);
         $post = $this->request->getParsedBody();
-        $exp->setCheckedItems(is_array($post['nodes']) ? $post['nodes'] : array());
+        $exp->setCheckedItems(array_key_exists('nodes',$post) ? $post['nodes'] : array());
 
         $this->tpl->setVariable('FORM_TARGET', '_top');
         $this->tpl->setVariable('FORM_ACTION', $this->ctrl->getFormAction($this, 'performAddTests'));

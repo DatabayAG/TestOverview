@@ -206,9 +206,9 @@ class ilObjTestOverview extends ilObjectPlugin
          */
         global $ilDB;
 
-        $tesRefId = $test;
+        $testRefId = $test;
         if ($test instanceof ilObjTest) {
-            $tesRefId = $test->getRefId();
+            $testRefId = $test->getRefId();
         }
 
         /* Insert t2o entry (test 2 overview) */
@@ -216,14 +216,14 @@ class ilObjTestOverview extends ilObjectPlugin
             'rep_robj_xtov_t2o',
             array(
                 'obj_id_overview' => array('integer', $this->getId()),
-                'ref_id_test' => array('integer', $tesRefId)
+                'ref_id_test' => array('integer', $testRefId)
             ),
             array()
         );
 
         if (! $test instanceof ilObjTest) {
             /* XXX fetch++ ... */
-            $test = ilObjectFactory::getInstanceByRefId($tesRefId);
+            $test = ilObjectFactory::getInstanceByRefId((int)$testRefId);
         }
 
         $this->test_objects[$test->getId()] = $test;

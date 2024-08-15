@@ -478,8 +478,14 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
     {
         $status = 'orange-result';
 
-        if($is_finished) {
+        if(!$is_finished && !$passed) {
             $status = $this->determineLpStatus($passed);
+        } else if (!$is_finished && $passed) {
+            $status = 'green-result';
+        } else if ($is_finished && !$passed) {
+            $status = 'red-result';
+        } else if ($is_finished && $passed) {
+            $status = 'green-result';
         }
 
         return $status;

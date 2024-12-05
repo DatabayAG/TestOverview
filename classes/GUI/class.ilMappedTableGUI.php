@@ -128,7 +128,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
         $this->setData($this->buildTableRowsArray($data['items']));
 
         if($this->getExternalSegmentation()) {
-            $this->setMaxCount((int)$data['cnt']);
+            $this->setMaxCount((int) $data['cnt']);
         }
 
         return $this;
@@ -146,16 +146,17 @@ abstract class ilMappedTableGUI extends ilTable2GUI
      */
     protected function getMembersObject(stdClass $container)
     {
-        $type = $container->type;
-        if($type == '') {
-            $type = $this->objectDataCache->lookupType((int)$container->obj_id);
+        if(isset($container->type)) {
+            $type = $container->type;
+        } else {
+            $type = $this->objectDataCache->lookupType((int) $container->obj_id);
         }
 
         switch ($type) {
             case "grp":
-                return new ilGroupParticipants((int)$container->obj_id);
+                return new ilGroupParticipants((int) $container->obj_id);
             case "crs":
-                return new ilCourseParticipants((int)$container->obj_id);
+                return new ilCourseParticipants((int) $container->obj_id);
             default:
                 throw new ilException("Type not supported");
         }

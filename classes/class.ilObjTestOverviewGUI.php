@@ -210,11 +210,11 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
             $this->object->setTitle($this->form->getInput('title'));
             $this->object->setDescription($this->form->getInput('desc'));
             $this->object->setResultPresentation($this->form->getInput('result_presentation'));
-            $this->object->setResultColumn((bool)$this->form->getInput('result_column'));
-            $this->object->setPointsColumn((bool)$this->form->getInput('points_column'));
-            $this->object->setAverageColumn((bool)$this->form->getInput('average_column'));
-            $this->object->setEnableExcel((bool)$this->form->getInput('enable_excel'));
-            $this->object->setHeaderPoints((bool)$this->form->getInput('header_points'));
+            $this->object->setResultColumn((bool) $this->form->getInput('result_column'));
+            $this->object->setPointsColumn((bool) $this->form->getInput('points_column'));
+            $this->object->setAverageColumn((bool) $this->form->getInput('average_column'));
+            $this->object->setEnableExcel((bool) $this->form->getInput('enable_excel'));
+            $this->object->setHeaderPoints((bool) $this->form->getInput('header_points'));
             $this->object->update();
             $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('msg_obj_modified'), true);
 
@@ -295,7 +295,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
         $query_params = $this->request->getQueryParams();
         $exp->setExpand(
-            isset($query_params['select_tovr_expanded']) && (int)$query_params['select_tovr_expanded'] ?
+            isset($query_params['select_tovr_expanded']) && (int) $query_params['select_tovr_expanded'] ?
             (int) $query_params['select_tovr_expanded'] :
             $this->tree->readRootId()
         );
@@ -318,8 +318,8 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
         $num_nodes = 0;
         foreach($post['nodes'] as $ref_id) {
-            if($this->access->checkAccess('tst_statistics', '', (int)$ref_id) || $this->access->checkAccess('write', '', (int)$ref_id)) {
-                $this->object->addTest((int)$ref_id);
+            if($this->access->checkAccess('tst_statistics', '', (int) $ref_id) || $this->access->checkAccess('write', '', (int) $ref_id)) {
+                $this->object->addTest((int) $ref_id);
                 ++$num_nodes;
             }
         }
@@ -568,7 +568,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function addToDeskObject(): void
     {
-        if((int)$this->ilSetting->get('disable_my_offers')) {
+        if((int) $this->ilSetting->get('disable_my_offers')) {
             $this->showContent();
             return;
         }
@@ -581,7 +581,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function removeFromDeskObject(): void
     {
-        if((int)$this->ilSetting->get('disable_my_offers')) {
+        if((int) $this->ilSetting->get('disable_my_offers')) {
             $this->showContent();
             return;
         }

@@ -288,7 +288,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $exp->setPostVar('nodes[]');
         $exp->highlightNode((string) $this->request->getQueryParams()['ref_id']);
         $post = $this->request->getParsedBody();
-        $exp->setCheckedItems(array_key_exists('nodes',$post) ? $post['nodes'] : array());
+        $exp->setCheckedItems((isset($post['nodes']) && is_array($post['nodes'])) ? $post['nodes'] : array());
 
         $this->tpl->setVariable('FORM_TARGET', '_top');
         $this->tpl->setVariable('FORM_ACTION', $this->ctrl->getFormAction($this, 'performAddTests'));

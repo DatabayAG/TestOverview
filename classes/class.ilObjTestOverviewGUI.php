@@ -581,8 +581,10 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     {
         $this->tabs->activateTab('properties');
         $post = $this->request->getParsedBody();
-        foreach ($post['order'] as $ref_id => $order_value) {
-            $this->object->setTestOrderValueForRef($ref_id, $order_value);
+        if(isset($post['order']) && is_array($post['order'])) {
+            foreach ($post['order'] as $ref_id => $order_value) {
+                $this->object->setTestOrderValueForRef($ref_id, $order_value);
+            }
         }
         $this->lng->loadLanguageModule('cntr');
         $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('cntr_saved_sorting'));

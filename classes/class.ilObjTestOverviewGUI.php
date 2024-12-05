@@ -255,7 +255,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
             $this->selectTests();
             return;
         }
-        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('tests_updated_success'), true);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('rep_robj_xtov_tests_updated_success'), true);
         $this->ctrl->redirect($this, 'editSettings');
 
         $this->editSettings();
@@ -315,7 +315,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
             return;
         }
 
-        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->txt('tests_updated_success'), true);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->txt('rep_robj_xtov_tests_updated_success'), true);
         $this->ctrl->redirect($this, 'editSettings');
 
         $this->editSettings();

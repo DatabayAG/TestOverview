@@ -443,7 +443,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             return 'no-result';
         }
 
-        $row = $this->evalDataByTestId[$testObjId][$activeId];
+        $row = $this->evalDataByTestId[$testObjId][$activeId] ?? null;
         if (!$row) {
             return 'no-result';
         }

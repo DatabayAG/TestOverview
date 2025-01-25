@@ -426,7 +426,7 @@ class ilObjTestOverview extends ilObjectPlugin
             $this->groups = array();
             while ($row = $this->db->fetchAssoc($res)) {
 
-                $object = ilObjectFactory::getInstanceByObjId($row['obj_id'], false);
+                $object = ilObjectFactory::getInstanceByObjId((int) $row['obj_id'], false);
                 if($object) {
                     $this->groups[ $row['obj_id'] ] = $object;
                 }

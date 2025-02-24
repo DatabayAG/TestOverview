@@ -68,11 +68,11 @@ class ilObjTestOverview extends ilObjectPlugin
                  array(
                     "obj_id" => $this->getId(),
                     'result_presentation' => $this->result_presentation,
-                    'result_column' => (int)$this->result_column,
-                    'points_column' => (int)$this->points_column,
-                    'average_column' => (int)$this->average_column,
-                    'enable_excel' => (int)$this->enable_excel,
-                    'header_points' => (int)$this->header_points,
+                    'result_column' => (int) $this->result_column,
+                    'points_column' => (int) $this->points_column,
+                    'average_column' => (int) $this->average_column,
+                    'enable_excel' => (int) $this->enable_excel,
+                    'header_points' => (int) $this->header_points,
                     )
              );
         $this->createMetaData();
@@ -84,11 +84,11 @@ class ilObjTestOverview extends ilObjectPlugin
             'rep_robj_xtov_overview',
             array(
                         'result_presentation' => array('text', $this->result_presentation),
-                        'result_column'	      => array('int', (int)$this->result_column),
-                        'points_column'       => array('int', (int)$this->points_column),
-                        'average_column'      => array('int', (int)$this->average_column),
-                        'enable_excel'        => array('int', (int)$this->enable_excel),
-                        'header_points'        => array('int', (int)$this->header_points),
+                        'result_column'	      => array('int', (int) $this->result_column),
+                        'points_column'       => array('int', (int) $this->points_column),
+                        'average_column'      => array('int', (int) $this->average_column),
+                        'enable_excel'        => array('int', (int) $this->enable_excel),
+                        'header_points'        => array('int', (int) $this->header_points),
                       ),
             array(
                         'obj_id' => array('int', $this->getId()))
@@ -107,14 +107,14 @@ class ilObjTestOverview extends ilObjectPlugin
 			WHERE
 				obj_id = ' . $this->db->quote($this->getId(), 'integer'));
 
-        while($row = $this->db->fetchObject($res)) {
-            $this->setId((int)$row->obj_id);
+        while ($row = $this->db->fetchObject($res)) {
+            $this->setId((int) $row->obj_id);
             $this->result_presentation = $row->result_presentation;
-            $this->result_column = (bool)$row->result_column;
-            $this->points_column = (bool)$row->points_column;
-            $this->average_column = (bool)$row->average_column;
-            $this->enable_excel = (bool)$row->enable_excel;
-            $this->header_points = (bool)$row->header_points;
+            $this->result_column = (bool) $row->result_column;
+            $this->points_column = (bool) $row->points_column;
+            $this->average_column = (bool) $row->average_column;
+            $this->enable_excel = (bool) $row->enable_excel;
+            $this->header_points = (bool) $row->header_points;
         }
     }
 
@@ -223,7 +223,7 @@ class ilObjTestOverview extends ilObjectPlugin
 
         if (! $test instanceof ilObjTest) {
             /* XXX fetch++ ... */
-            $test = ilObjectFactory::getInstanceByRefId((int)$testRefId);
+            $test = ilObjectFactory::getInstanceByRefId((int) $testRefId);
         }
 
         $this->test_objects[$test->getId()] = $test;
@@ -364,7 +364,7 @@ class ilObjTestOverview extends ilObjectPlugin
         $this->test_ref_ids_by_obj_id = array();
 
         while ($row = $this->db->fetchAssoc($res)) {
-            if(!isset($this->test_ref_ids_by_obj_id[ $row['obj_id'] ])) {
+            if (!isset($this->test_ref_ids_by_obj_id[ $row['obj_id'] ])) {
                 $this->test_ref_ids_by_obj_id[ $row['obj_id'] ] = array();
             }
 
@@ -398,7 +398,7 @@ class ilObjTestOverview extends ilObjectPlugin
 
     public function getTest($obj_id)
     {
-        if(!isset($this->test_objects[$obj_id])) {
+        if (!isset($this->test_objects[$obj_id])) {
             $this->test_objects[$obj_id] = ilObjectFactory::getInstanceByObjId($obj_id);
         }
 
@@ -427,7 +427,7 @@ class ilObjTestOverview extends ilObjectPlugin
             while ($row = $this->db->fetchAssoc($res)) {
 
                 $object = ilObjectFactory::getInstanceByObjId($row['obj_id'], false);
-                if($object) {
+                if ($object) {
                     $this->groups[ $row['obj_id'] ] = $object;
                 }
             }

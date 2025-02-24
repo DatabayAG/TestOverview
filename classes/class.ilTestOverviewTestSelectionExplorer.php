@@ -57,7 +57,8 @@ class ilTestOverviewTestSelectionExplorer extends ilPasteIntoMultipleItemsExplor
         $visible = parent::isVisible($a_ref_id, $a_type);
 
         if('tst' == $a_type) {
-            if(!$ilAccess->checkAccess('tst_statistics', '', (int)$a_ref_id) && !$ilAccess->checkAccess('write', '', $a_ref_id)) {
+            $test = ilObjectFactory::getInstanceByRefId($a_ref_id);
+            if((!$ilAccess->checkAccess('tst_statistics', '', (int)$a_ref_id) && !$ilAccess->checkAccess('write', '', $a_ref_id)) || $test->getAnonymity()) {
                 return false;
             }
         }

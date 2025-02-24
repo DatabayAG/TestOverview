@@ -510,10 +510,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
     {
         if($this->overview->getResultColumn()) {
             if ($this->overview->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
-                $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+                $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'), 'avg');
                 $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
             } else {
-                $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'));
+                $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_sum'), 'sum');
                 $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_sum');
             }
         }
@@ -523,12 +523,12 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             if($this->full_max > 0) {
                 $points = " (" . $this->full_max . " " . $this->lng->txt('points') . ")";
             }
-            $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points);
+            $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points, 'points');
             $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points;
         }
 
         if($this->overview->getAverageColumn()) {
-            $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'));
+            $this->addColumn($this->lng->txt('rep_robj_xtov_test_overview_hdr_avg'), 'avg');
             $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
         }
     }

@@ -254,7 +254,15 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         foreach ($overview->getUniqueTests() as $obj_id => $refs) {
             $test = $overview->getTest($obj_id);
             $activeId  = $test->getActiveIdOfUser($row['member_id']);
-
+            if($activeId === null) {
+                $this->populateNoLinkCell(
+                    '&nbsp;',
+                    $this->getCSSByTestResult(null)
+                );
+                $this->tpl->setCurrentBlock('cell');
+                $this->tpl->parseCurrentBlock();
+                continue;
+            }
             $testResult = null;
             global $ilUser;
             $testResult    = $test->getTestResult($activeId);
@@ -644,13 +652,6 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 ilLPStatus::LP_STATUS_FAILED_NUM => 'red-result'
             );
         }
-
-        return array(
-            LP_STATUS_NOT_ATTEMPTED_NUM => 'no-result',
-            LP_STATUS_IN_PROGRESS_NUM => 'orange-result',
-            LP_STATUS_COMPLETED_NUM => 'green-result',
-            LP_STATUS_FAILED_NUM => 'red-result'
-        );
     }
 
     /**
@@ -757,17 +758,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 if (isset($column['width']) && $column["width"] != "") {
                     $this->tpl->setVariable("TBL_COLUMN_WIDTH_NO_LINK", " width=\"" . $column["width"] . "\"");
                 }
-                if (!isset($column["is_checkbox_action_column"])) {
-                    $this->tpl->setVariable(
-                        "TBL_HEADER_CELL_NO_LINK",
-                        $column["text"]
-                    );
-                } else {
-                    $this->tpl->setVariable(
-                        "TBL_HEADER_CELL_NO_LINK",
-                        '&nbsp;&nbsp;'. $lng->txt("action")
-                    );
-                }
+                $this->tpl->setVariable(
+                    "TBL_HEADER_CELL_NO_LINK",
+                    $column["text"]
+                );
                 $this->tpl->setVariable("HEAD_CELL_NL_ID", "thc_" . $this->getId() . "_" . $ccnt);
 
                 if (isset($column['class']) && $column["class"] != "") {

@@ -261,46 +261,47 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 );
                 $this->tpl->setCurrentBlock('cell');
                 $this->tpl->parseCurrentBlock();
-                continue;
-            }
-            $testResult = null;
-            global $ilUser;
-            $testResult    = $test->getTestResult($activeId);
-            if($this->accessIndex[$obj_id] || ($this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
-                if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
-                    $max_points = $max_points + $testResult['pass']['total_max_points'];
-                    $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
-                    if($this->parent_obj->getObject()->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
-                        $result		= sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
-                    } else {
-                        if($this->overview->getPointsColumn() && $this->overview->getHeaderPoints()) {
-                            $result	= $testResult['pass']['total_reached_points'];
+            } else {
+                $testResult = null;
+                global $ilUser;
+                $testResult = $test->getTestResult($activeId);
+                if ($this->accessIndex[$obj_id] || ($this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
+                    if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
+                        $max_points = $max_points + $testResult['pass']['total_max_points'];
+                        $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
+                        if ($this->parent_obj->getObject()->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
+                            $result = sprintf("%.2f %%", (float) $testResult['pass']['percent'] * 100);
                         } else {
-                            $result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
+                            if ($this->overview->getPointsColumn() && $this->overview->getHeaderPoints()) {
+                                $result = $testResult['pass']['total_reached_points'];
+                            } else {
+                                $result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
+                            }
                         }
+                        $results[] = $result . '##' . $this->getCSSByTestResult($testResult, $activeId, $obj_id) . '##';
+                    } else {
+                        $result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
+                        $results[] = 0 . "##no-result##";
                     }
-                    $results[]  = $result . '##' . $this->getCSSByTestResult($testResult, $activeId, $obj_id) . '##';
-                } else {
-                    $result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
-                    $results[]  = 0 . "##no-result##";
-                }
 
-                if ($activeId > 0) {
-                    $resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
-                    $this->populateLinkedCell($resultLink, $result, $this->getCSSByTestResult($testResult, $activeId, $obj_id));
+                    if ($activeId > 0) {
+                        $resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
+                        $this->populateLinkedCell($resultLink, $result,
+                            $this->getCSSByTestResult($testResult, $activeId, $obj_id));
+                    } else {
+                        $this->populateNoLinkCell(
+                            $result,
+                            $this->getCSSByTestResult(null)
+                        );
+                    }
+
                 } else {
                     $this->populateNoLinkCell(
-                        $result,
+                        $this->lng->txt("rep_robj_xtov_overview_test_no_permission"),
                         $this->getCSSByTestResult(null)
                     );
                 }
-            } else {
-                $this->populateNoLinkCell(
-                    $this->lng->txt("rep_robj_xtov_overview_test_no_permission"),
-                    $this->getCSSByTestResult(null)
-                );
             }
-
             $this->tpl->setCurrentBlock('cell');
             $this->tpl->parseCurrentBlock();
         }

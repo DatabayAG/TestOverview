@@ -251,6 +251,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
         $max_points = 0;
         $reached_points = 0;
+        $row_data = [];
         foreach ($overview->getUniqueTests() as $obj_id => $refs) {
             $test = $overview->getTest($obj_id);
             $activeId  = $test->getActiveIdOfUser($row['member_id']);
@@ -261,6 +262,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 );
                 $this->tpl->setCurrentBlock('cell');
                 $this->tpl->parseCurrentBlock();
+                $row_data[] = "##no-result##";
             } else {
                 $testResult = null;
                 global $ilUser;
@@ -278,10 +280,12 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                                 $result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
                             }
                         }
+                        $row_data[] = $result;
                         $results[] = $result . '##' . $this->getCSSByTestResult($testResult, $activeId, $obj_id) . '##';
                     } else {
                         $result = $this->lng->txt("rep_robj_xtov_overview_test_not_passed");
                         $results[] = 0 . "##no-result##";
+                        $row_data[] = " ";
                     }
 
                     if ($activeId > 0) {
@@ -294,12 +298,12 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                             $this->getCSSByTestResult(null)
                         );
                     }
-
                 } else {
                     $this->populateNoLinkCell(
                         $this->lng->txt("rep_robj_xtov_overview_test_no_permission"),
                         $this->getCSSByTestResult(null)
                     );
+                    $row_data[] = " ";
                 }
             }
             $this->tpl->setCurrentBlock('cell');
@@ -313,9 +317,9 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $row_data[] = $user->getFirstname();
         $row_data[] = $user->getLastname();
         $row_data[] = $user->getLogin();
-        foreach($results as $item) {
-            $row_data[] = $item;
-        }
+        //foreach($results as $item) {
+        //    $row_data[] = $item;
+        //}
         foreach($this->temp_results as $item) {
             $row_data[] = $item;
         }
@@ -551,6 +555,8 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
     {
         if($this->overview->getResultColumn()) {
             $this->populateResultCell($results, $reached_points, $max_points);
+        } else {
+            $this->temp_results[] = '##no-result##';
         }
 
         if($this->overview->getPointsColumn()) {
@@ -564,6 +570,8 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $this->tpl->setVariable("POINTS_VALUE", $points);
             $this->temp_results[] = $points;
             $this->tpl->parseCurrentBlock();
+        } else {
+            $this->temp_results[] = $results[0] ?? '##no-result##';
         }
 
         if($this->overview->getAverageColumn()) {

@@ -263,6 +263,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 $this->tpl->setCurrentBlock('cell');
                 $this->tpl->parseCurrentBlock();
                 $row_data[] = "##no-result##";
+		$results[] = '##no-result##';
             } else {
                 $testResult = null;
                 global $ilUser;
@@ -317,12 +318,12 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $row_data[] = $user->getFirstname();
         $row_data[] = $user->getLastname();
         $row_data[] = $user->getLogin();
-        //foreach($results as $item) {
-        //    $row_data[] = $item;
-        //}
-        foreach($this->temp_results as $item) {
+        foreach($results as $item) {
             $row_data[] = $item;
         }
+        //foreach($this->temp_results as $item) {
+        //    $row_data[] = $item;
+        //}
         $this->export_row_data[] = $row_data;
         $this->temp_results = array();
 

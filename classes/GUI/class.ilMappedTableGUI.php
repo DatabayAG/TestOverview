@@ -61,7 +61,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
      *    The @see ilMappedTableGUI::populate() method should
      *    call formatData() before calling setData().
      */
-    protected function formatData(array $data): array
+    public function formatData(array $data): array
     {
         return $data;
     }
@@ -70,7 +70,7 @@ abstract class ilMappedTableGUI extends ilTable2GUI
      * overwrite this method for ungregging the object data structures
      * since ilias tables support arrays only
      */
-    protected function buildTableRowsArray($data): array
+    public function buildTableRowsArray($data): array
     {
         return $data;
     }
@@ -98,18 +98,9 @@ abstract class ilMappedTableGUI extends ilTable2GUI
         }
 
         /* Configure query execution */
-        $params = array();
-        if($this->getExternalSegmentation()) {
-            $params['limit'] = $this->getLimit();
-            $params['offset'] = $this->getOffset();
-        }
-        if($this->getExternalSorting()) {
-            $params['order_field'] = $this->getOrderField();
-            $params['order_direction'] = $this->getOrderDirection();
-        }
+        $params = $this->getParams();
 
-        $overview = $this->getParentObject()->getObject();
-        $filters  = array("overview_id" => $overview->getId()) + $this->filter;
+        $filters = $this->getFilters();
 
         /* Execute query. */
         $data = $this->getMapper()->getList($params, $filters);
@@ -156,5 +147,32 @@ abstract class ilMappedTableGUI extends ilTable2GUI
             default:
                 throw new ilException("Type not supported");
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams() : array
+    {
+        $params = array();
+        if ($this->getExternalSegmentation()) {
+            $params['limit'] = $this->getLimit();
+            $params['offset'] = $this->getOffset();
+        }
+        if ($this->getExternalSorting()) {
+            $params['order_field'] = $this->getOrderField();
+            $params['order_direction'] = $this->getOrderDirection();
+        }
+        return $params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilters() : array
+    {
+        $overview = $this->getParentObject()->getObject();
+        $filters = array("overview_id" => $overview->getId()) + $this->filter;
+        return $filters;
     }
 }

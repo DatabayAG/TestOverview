@@ -23,10 +23,8 @@
  */
 class ilTestOverviewTableGUI extends ilMappedTableGUI
 {
-    private $accessIndex = array();
-    private $readIndex = array();
-
     private $temp_results = array();
+    private ilTestOverviewData $to_data;
 
     /**
      *	 @var	array
@@ -57,12 +55,14 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      *	This table GUI constructor method initializes the
      *	object and configures the table rendering.
      */
-    public function __construct(ilObjectGUI $a_parent_obj, $a_parent_cmd)
+    public function __construct(ilObjectGUI $a_parent_obj, $a_parent_cmd, ilTestOverviewData $to_data)
     {
         /**
          *	@var ilCtrl	$ilCtrl
          */
         global $ilCtrl, $tpl, $ilAccess;
+
+        $this->to_data = $to_data;
 
         /* Pre-configure table */
         $this->setId(sprintf(
@@ -100,25 +100,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_lastname');
         $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_login');
 
+        // --
         foreach($this->overview->getUniqueTests() as $obj_id => $refs) {
-            // Set default permissions based on statistics or write access
-            $this->accessIndex[$obj_id] = false;
-            $this->readIndex[$obj_id] = false;
-            $valid_ref_id = null;
-            $shows_all_users = false;
-            foreach($refs as $ref_id) {
-                switch(true) {
-                    case $ilAccess->checkAccess("tst_statistics", "", (int) $ref_id):
-                    case $ilAccess->checkAccess("write", "", (int) $ref_id):
-                        $valid_ref_id =(int) $ref_id;
-                        $this->accessIndex[$obj_id] = $valid_ref_id;
-                        break 2;
-                    case $ilAccess->checkAccess("read", "", (int)$ref_id):
-                        $valid_ref_id = (int) $ref_id;
-                        $this->readIndex[$obj_id] = $valid_ref_id;
-                        break 2;
-                }
-            }
+
+            $this->to_data->determineTestAccessPermissions($obj_id, $refs, $ilAccess);
 
             $title_text = $this->overview->getTest($obj_id)->getTitle();
             /** @var ilObjTest $test_object */
@@ -141,7 +126,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 }
             }
 
-            $ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $valid_ref_id);
+            $ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', $this->to_data->getValidRefIdForAccess($obj_id));
             $this->addTestColumn($title_text, $ilCtrl->getLinkTargetByClass('ilobjtestgui', 'infoScreen'));
             $this->export_header_data[] = $title_text;
             $ilCtrl->setParameterByClass("ilobjtestgui", 'ref_id', '');
@@ -267,7 +252,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                 $testResult = null;
                 global $ilUser;
                 $testResult = $test->getTestResult($activeId);
-                if ($this->accessIndex[$obj_id] || ($this->readIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
+                if ($this->to_data->permissionsAccessIndex[$obj_id] || ($this->to_data->permissionsReadIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
                     if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
                         $max_points = $max_points + $testResult['pass']['total_max_points'];
                         $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
@@ -289,7 +274,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
                     }
 
                     if ($activeId > 0) {
-                        $resultLink = $this->buildMemberResultLinkTarget($this->accessIndex[$obj_id], $activeId);
+                        $resultLink = $this->buildMemberResultLinkTarget($this->to_data->permissionsAccessIndex[$obj_id], $activeId);
                         $this->populateLinkedCell($resultLink, $result,
                             $this->getCSSByTestResult($testResult, $activeId, $obj_id));
                     } else {
@@ -359,7 +344,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      * @param array $data
      * @throws OutOfRangeException
      */
-    protected function formatData(array $data): array
+    public function formatData(array $data): array
     {
         /* For each group object we fetched, we need
            to retrieve the members in order to have
@@ -449,7 +434,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      * @param int $testObjId
      * @return string
      */
-    private function getCSSByTestResult($result, $activeId = null, $testObjId = null)
+    public function getCSSByTestResult($result, $activeId = null, $testObjId = null)
     {
         if (null === $result) {
             return 'no-result';
@@ -636,7 +621,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      * @return string
      */
 
-    private function getCSSByProgress($progress)
+    public function getCSSByProgress($progress)
     {
         $map = $this->buildCssClassByProgressMap();
 
@@ -832,7 +817,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $this->tpl->setVariable('TBL_ORDER_LINK', $link);
     }
 
-    protected function buildTableRowsArray($data): array
+    public function buildTableRowsArray($data): array
     {
         $rows = array();
 

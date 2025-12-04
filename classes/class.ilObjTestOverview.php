@@ -396,7 +396,7 @@ class ilObjTestOverview extends ilObjectPlugin
         return $this->test_obj_id_by_ref_id;
     }
 
-    public function getTest($obj_id)
+    public function getTest($obj_id): ilObjTest
     {
         if (!isset($this->test_objects[$obj_id])) {
             $this->test_objects[$obj_id] = ilObjectFactory::getInstanceByObjId($obj_id);

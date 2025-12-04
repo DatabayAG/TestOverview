@@ -158,7 +158,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $this->tabs->activateTab("content");
 
         /* Configure content UI */
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
         $table->setMapper(new ilOverviewMapper())->populate();
 
         $legend = new ilTemplate("tpl.legend.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview");
@@ -176,13 +176,19 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     protected function exportExcel(): void
     {
         /* Configure content UI */
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
-        $table->setMapper(new ilOverviewMapper())->populate();
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
+        $table->setMapper(new ilOverviewMapper());
+        $data = new ilTestOverviewData($this->object);
 
-        $table->getHTML(); // No cooler way to do it, sorry.
+        $header_data = $data->getExportHeaderData($this->access);
+        $row_data = $data->getExportRowData($table);
+
+        //$table->getHTML(); // No cooler way to do it, sorry.
 
         $exporter = new ilTestOverviewExcelExporter();
-        $exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
+        $exporter->export('TestOverview', $header_data, $row_data, 'TestOverview', true);
+        //$exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
+
     }
 
     protected function renderSettings(): string
@@ -500,7 +506,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function applyOverviewFilter(): void
     {
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
         $table->resetOffset();
         $table->writeFilterToSession();
 
@@ -527,7 +533,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function resetOverviewFilter(): void
     {
-        $table = new ilTestOverviewTableGUI($this, 'editSettings');
+        $table = new ilTestOverviewTableGUI($this, 'editSettings', new ilTestOverviewData($this->object));
         $table->resetOffset();
         $table->resetFilter();
 

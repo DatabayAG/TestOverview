@@ -354,7 +354,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             'cnt'	=> 0);
 
         if(!$data['items']) {
-            $formatted = $this->getMapper()->getUniqueTestParticipants(array_keys($this->accessIndex));
+            $formatted = $this->getMapper()->getUniqueTestParticipants(array_keys((array) $this->to_data->permissionsAccessIndex));
             $formatted['items'] = $this->fetchUserInformation($formatted['items']);
             return $this->sortByFullName($formatted);
         }

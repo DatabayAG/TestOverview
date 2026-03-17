@@ -5,7 +5,7 @@ The main goal is to make accumulating test results from multiple tests in arbitr
 The overview itself should present a table matrix of users (rows), test (end) results (percentages; columns) and a final mean value column. The matrix fields should have different background colors for passed (green), not passed (red) and perhaps not finished (yellow) retaining white for no results (yet).
 
 ## Installation Instructions
-1. Clone this repository to <ILIAS_DIRECTORY>/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview
+1. Clone this repository to <ILIAS_DIRECTORY>/public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview
 2. Login to ILIAS with an administrator account (e.g. root)
 3. Select **Plugins** from the **Administration** main menu drop down.
 4. Search the **TestOverview** plugin in the list of plugin and choose **Activate** from the **Actions** drop down.

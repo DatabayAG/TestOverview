@@ -21,7 +21,7 @@
  *	@category	GUI
  *	@author		Greg Saive <gsaive@databay.de>
  */
-class ilTestOverviewTableGUI extends ilMappedTableGUI
+class ilTestOverviewTableGUI extends ilTOMappedTableGUI
 {
     private $temp_results = array();
     private ilTestOverviewData $to_data;
@@ -108,7 +108,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $title_text = $this->overview->getTest($obj_id)->getTitle();
             /** @var ilObjTest $test_object */
             $test_object = $this->overview->getTest($obj_id);
-            $evaluation = $test_object->getCompleteEvaluationData(false);
+            $evaluation = $test_object->getCompleteEvaluationData();
             $participants = $evaluation->getParticipants();
             if(count($participants)) {
                 /** @var ilTestEvaluationUserData $participant */
@@ -136,10 +136,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $this->setupEvaluationColumns();
 
         //$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
-        $this->setRowTemplate('tpl.test_overview_row.html', 'Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
+        $this->setRowTemplate('tpl.test_overview_row.html', 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
         $this->setDescription($this->lng->txt("rep_robj_xtov_test_overview_description"));
 
-        $cssFile = "Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/css/testoverview.css";
+        $cssFile = "./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/css/testoverview.css";
         $tpl->addCss($cssFile);
 
         /* Configure table filter */
@@ -208,15 +208,20 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         $own = new ilCheckboxInputGUI($this->lng->txt("rep_robj_xtov_overview_flt_own"), 'flt_own');
 
         /* Configure filter form */
-        $this->addFilterItem($pname);
-        $this->addFilterItem($gname);
-        $this->addFilterItem($own);
-        $pname->readFromSession();
-        $gname->readFromSession();
-        $own->readFromSession();
-        $this->filter['flt_participant_name'] = $pname->getValue();
-        $this->filter['flt_group_name']		  = $gname->getValue();
-        $this->filter['flt_own']		  = $own->getChecked();
+        //$this->addFilterItem($pname);
+        //$this->addFilterItem($gname);
+        //$this->addFilterItem($own);
+        //$pname->readFromSession();
+        //$gname->readFromSession();
+        //$own->readFromSession();
+        $ref_id = $this->parent_obj->getRefId();
+        $pname = $_SESSION['table_xtov_filter_participant_'.$ref_id] ?? '';
+        $gname = $_SESSION['table_xtov_filter_group_'.$ref_id] ?? 0;
+        $own = $_SESSION['table_xtov_filter_ownresults_'.$ref_id] ?? false;
+
+        $this->filter['flt_participant_name'] = $pname;
+        $this->filter['flt_group_name']		  = $gname;
+        $this->filter['flt_own']		  = $own;
     }
 
     /**
@@ -450,7 +455,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $is_passed = true;
         }
 
-        if ($this->overview->getTest($testObjId)->getPassScoring() == SCORE_LAST_PASS) {
+        if ($this->overview->getTest($testObjId)->getPassScoring() == \ilObjTest::SCORE_LAST_PASS) {
             $status = $this->determineStatusForScoreLastPassTests((bool)$row['is_finished'], $is_passed);
         } else {
             $status = 'orange-result';
@@ -546,7 +551,11 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
         if($this->overview->getPointsColumn()) {
             if (count($results)) {
-                $points = sprintf("%.2f", array_sum($results));
+                $results_new = [];
+                foreach ($results as $result) {
+                    $results_new[] = (integer)$result;
+                }
+                $points = sprintf("%.2f", array_sum($results_new));
             } else {
                 $points = "";
             }
@@ -562,16 +571,24 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         if($this->overview->getAverageColumn()) {
             if (count($results)) {
                 if($this->overview->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
-                    if(array_sum($results) == 0) {
+                    $results_new = [];
+                    foreach ($results as $result) {
+                        $results_new[] = (integer)$result;
+                    }
+                    if(array_sum($results_new) == 0) {
                         $points = '0.00 %';
                     } else {
-                        $points = sprintf("%.2f %%", (array_sum($results) / count($results)));
+                        $points = sprintf("%.2f %%", (array_sum($results_new) / count($results_new)));
                     }
                 } else {
-                    if($this->full_max === 0 || array_sum($results) === 0) {
+                    $results_new = [];
+                    foreach ($results as $result) {
+                        $results_new[] = (integer)$result;
+                    }
+                    if($this->full_max === 0 || array_sum($results_new) === 0) {
                         $points = '0.00 %';
                     } else {
-                        $points = sprintf("%.2f %%", (array_sum($results) / $this->full_max) * 100);
+                        $points = sprintf("%.2f %%", (array_sum($results_new) / $this->full_max) * 100);
                     }
                 }
             } else {
@@ -592,6 +609,12 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      */
     protected function populateResultCell($results, $reached_points, $max_points)
     {
+        $results_new = [];
+        foreach ($results as $result) {
+            $results_new[] = (integer)$result;
+        }
+        $results = $results_new;
+
         if (count($results)) {
             if ($this->parent_obj->getObject()->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
                 $average = sprintf("%.2f", (array_sum($results) / count($results)));
@@ -875,7 +898,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
      *
      * @throws ilException
      */
-    public function populate(): ilMappedTableGUI
+    public function populate(): ilTOMappedTableGUI
     {
         if($this->getExternalSegmentation() && $this->getExternalSorting()) {
             $this->determineOffsetAndOrder();
@@ -898,6 +921,13 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
         $overview = $this->getParentObject()->getObject();
         $filters  = array("overview_id" => $overview->getId()) + $this->filter;
+
+        $ref_id = $this->parent_obj->getRefId();
+        $filters = [
+            'flt_participant_name' => $_SESSION['table_xtov_filter_participant_'.$ref_id] ?? '',
+            'flt_group_name' => $_SESSION['table_xtov_filter_group_'.$ref_id] ?? 0,
+            'flt_own' => (int) ($_SESSION['table_xtov_filter_ownresults_'.$ref_id] ?? 0)
+        ];
 
         /* Execute query. */
         $data = $this->getMapper()->getList($params, $filters);

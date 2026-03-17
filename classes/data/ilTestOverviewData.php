@@ -65,7 +65,7 @@ class ilTestOverviewData
             $title_text = $this->TestOverviewObject->getTest($obj_id)->getTitle();
             /** @var ilObjTest $test_object */
             $test_object = $this->TestOverviewObject->getTest($obj_id);
-            $evaluation = $test_object->getCompleteEvaluationData(false);
+            $evaluation = $test_object->getCompleteEvaluationData();
             $participants = $evaluation->getParticipants();
             if(count($participants)) {
                 /** @var ilTestEvaluationUserData $participant */
@@ -93,7 +93,7 @@ class ilTestOverviewData
         return $this->export_header_data;
     }
 
-    public function getExportRowData(ilMappedTableGUI $table): array
+    public function getExportRowData(ilTOMappedTableGUI $table): array
     {
         $mapper = new ilOverviewMapper();
         $data = $mapper->getList(
@@ -204,9 +204,14 @@ class ilTestOverviewData
     {
         $this->temp_results[] = '##no-result##';
 
+        $t_results = [];
+        foreach ($results as $result) {
+            $t_results[] = (int)$result;
+        }
+
         if($this->TestOverviewObject->getPointsColumn()) {
             if (count($results)) {
-                $points = sprintf("%.2f", array_sum($results));
+                $points = sprintf("%.2f", array_sum($t_results));
             } else {
                 $points = "";
             }
@@ -218,16 +223,16 @@ class ilTestOverviewData
         if($this->TestOverviewObject->getAverageColumn()) {
             if (count($results)) {
                 if($this->TestOverviewObject->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
-                    if(array_sum($results) == 0) {
+                    if(array_sum($t_results) == 0) {
                         $points = '0.00 %';
                     } else {
-                        $points = sprintf("%.2f %%", (array_sum($results) / count($results)));
+                        $points = sprintf("%.2f %%", (array_sum($t_results) / count($results)));
                     }
                 } else {
                     if($this->full_max === 0 || array_sum($results) === 0) {
                         $points = '0.00 %';
                     } else {
-                        $points = sprintf("%.2f %%", (array_sum($results) / $this->full_max) * 100);
+                        $points = sprintf("%.2f %%", (array_sum($t_results) / $this->full_max) * 100);
                     }
                 }
             } else {

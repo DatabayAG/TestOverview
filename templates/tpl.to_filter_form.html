@@ -1,0 +1,30 @@
+<!-- tpl.to_filter_form.html: Horizontale Filterleiste für TestOverview Plugin -->
+<div class="to-filter-bar" style="background:#f7f7f7; padding:16px 8px; border-radius:4px;">
+    <form id="to-filter-form" method="post" action="{FORM_ACTION}" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:flex-start; gap:32px;">
+            <div style="display:flex; flex-direction:column; min-width:180px;">
+                <label for="to-participant">{TXT_PARTICIPANT}</label>
+                <input type="text" id="to-participant" name="participant" value="{PARTICIPANT}" style="width:100%; min-width:120px;" placeholder="{TXT_PARTICIPANT}">
+            </div>
+            <div style="display:flex; flex-direction:column; min-width:180px;">
+                <label for="to-membership">{TXT_MEMBERSHIP}</label>
+                <select id="to-membership" name="membership" style="width:100%; min-width:120px;">
+                    <option value="">{TXT_SELECT}</option>
+                    {MEMBERSHIP_OPTIONS}
+                </select>
+            </div>
+            <div style="display:flex; flex-direction:column; min-width:120px;">
+                <label for="to-own-results">{TXT_OWN_RESULTS}</label>
+                <input type="checkbox" id="to-own-results" name="own_results" {OWN_RESULTS_CHECKED}>
+            </div>
+        </div>
+        <div style="display:flex; flex-direction:row; gap:8px; margin-top:8px;">
+            <button type="submit" name="apply_filter" class="ilBtn ilBtnPrimary" style="background:#4a6382; color:#fff;">{TXT_APPLY_FILTER}</button>
+            <button type="submit" name="reset_filter" class="ilBtn ilBtnSecondary" style="background:#4a6382; color:#fff;">{TXT_RESET_FILTER}</button>
+        </div>
+    </form>
+    <div style="float:right; margin-top:-8px;">
+        <a href="#" id="to-filter-toggle" onclick="document.getElementById('to-filter-form').style.display = (document.getElementById('to-filter-form').style.display === 'none' ? 'flex' : 'none'); this.innerText = (this.innerText === '{TXT_HIDE_FILTER}' ? '{TXT_SHOW_FILTER}' : '{TXT_HIDE_FILTER}'); return false;" style="color:#4a6382;">{TXT_HIDE_FILTER}</a>
+    </div>
+</div>
+<!-- Platzhalter: {PARTICIPANT}, {MEMBERSHIP_OPTIONS}, {OWN_RESULTS_CHECKED}, {TXT_*} werden serverseitig ersetzt -->

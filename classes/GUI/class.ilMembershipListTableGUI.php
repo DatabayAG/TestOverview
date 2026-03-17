@@ -61,7 +61,7 @@ class ilMembershipListTableGUI extends ilMappedTableGUI
         ));
 
         //$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
-        $this->setRowTemplate('tpl.simple_object_row.html', 'Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
+        $this->setRowTemplate('tpl.simple_object_row.html', 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
 
         $this->addColumn($this->lng->txt(""), '', '1px', true);
         $this->addColumn($this->lng->txt("rep_robj_xtov_membership_list_hdr_membership_title"), 'title');

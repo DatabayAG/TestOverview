@@ -36,6 +36,8 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
      */
     protected $form;
 
+    use ilTestOverviewRequestTrait;
+
     private function fillCloneTemplate(?string $tpl_name, string $type): ?ilPropertyFormGUI
     {
         $cp = new ilObjectCopyGUI($this);
@@ -157,32 +159,51 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     {
         $this->tabs->activateTab("content");
 
+        $mapper = new ilOverviewMapper();
+        $groups = $mapper->getGroupPairs($this->getObject()->getId());
+
         /* Configure content UI */
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
         $table->setMapper(new ilOverviewMapper())->populate();
 
-        $legend = new ilTemplate("tpl.legend.html", true, true, "./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview");
+        $legend = new ilTemplate("tpl.legend.html", true, true, "./public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview");
         $legend->setVariable('TXT_HEADER', $this->lng->txt('rep_robj_xtov_legend'));
         $legend->setVariable('TXT_NOT_STARTED', $this->lng->txt('rep_robj_xtov_not_started'));
         $legend->setVariable('TXT_IN_PROGRESS', $this->lng->txt('rep_robj_xtov_in_progress'));
         $legend->setVariable('TXT_COMPLETED', $this->lng->txt('rep_robj_xtov_completed'));
         $legend->setVariable('TXT_FAILED', $this->lng->txt('rep_robj_xtov_failed'));
         $legend->parseCurrentBlock();
+
+        $filter_form = new ilTOFilterForm();
+        $form = $filter_form->render(
+            $groups,
+            $_SESSION['table_xtov_filter_participant_'.$this->object->getRefId()] ?? '',
+            $_SESSION['table_xtov_filter_group_'.$this->object->getRefId()] ?? 0,
+            $_SESSION['table_xtov_filter_ownresults_'.$this->object->getRefId()] ?? false,
+            $this->ctrl->getLinkTarget($this, 'applyOverviewFilter')
+        );
+
         /* Populate template */
         $this->tpl->setDescription($this->object->getDescription());
-        $this->tpl->setContent($table->getHTML() . $legend->get());
+        $this->tpl->setContent($form . $table->getHTML() . $legend->get());
     }
 
     protected function exportExcel(): void
     {
         /* Configure content UI */
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
-        $table->setMapper(new ilOverviewMapper())->populate();
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
+        $table->setMapper(new ilOverviewMapper());
+        $data = new ilTestOverviewData($this->object);
 
-        $table->getHTML(); // No cooler way to do it, sorry.
+        $header_data = $data->getExportHeaderData($this->access);
+        $row_data = $data->getExportRowData($table);
+
+        //$table->getHTML(); // No cooler way to do it, sorry.
 
         $exporter = new ilTestOverviewExcelExporter();
-        $exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
+        $exporter->export('TestOverview', $header_data, $row_data, 'TestOverview', true);
+        //$exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
+
     }
 
     protected function renderSettings(): string
@@ -280,7 +301,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     {
         $this->tabs->activateTab('properties');
         $this->toolbar->addButton($this->lng->txt('cancel'), $this->ctrl->getLinkTarget($this, 'editSettings'));
-        $this->tpl->addBlockfile('ADM_CONTENT', 'adm_content', 'tpl.paste_into_multiple_objects.html', 'Services/Object');
+        $this->tpl->addBlockfile('ADM_CONTENT', 'adm_content', 'tpl.paste_into_multiple_objects.html', 'components/ILIAS/ILIASObject');
 
         $exp = new ilTestOverviewTestSelectionExplorer('select_tovr_expanded');
         $exp->setExpandTarget($this->ctrl->getLinkTarget($this, 'selectTests'));
@@ -500,9 +521,25 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function applyOverviewFilter(): void
     {
-        $table = new ilTestOverviewTableGUI($this, 'showContent');
+        global $_SESSION;
+        $participant = $this->retrieveFromRequest('participant', 'string');
+        $group = (int) $this->retrieveFromRequest('membership', 'string');
+        $own = (bool) $this->retrieveFromRequest('own_results', 'string');
+        $ref_id = (int) $this->retrieveFromRequest('ref_id', 'string');
+
+        if($this->hasValue('post', 'apply_filter')) {
+            $_SESSION['table_xtov_filter_participant_'.$ref_id] = $participant;
+            $_SESSION['table_xtov_filter_group_'.$ref_id] = $group;
+            $_SESSION['table_xtov_filter_ownresults_'.$ref_id] = $own;
+        } else {
+            unset($_SESSION['table_xtov_filter_participant_'.$ref_id]);
+            unset($_SESSION['table_xtov_filter_group_'.$ref_id]);
+            unset($_SESSION['table_xtov_filter_ownresults_'.$ref_id]);
+        }
+
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
         $table->resetOffset();
-        $table->writeFilterToSession();
+//        $table->writeFilterToSession();
 
         $this->showContent();
     }
@@ -523,15 +560,6 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $table->writeFilterToSession();
 
         $this->editSettings();
-    }
-
-    public function resetOverviewFilter(): void
-    {
-        $table = new ilTestOverviewTableGUI($this, 'editSettings');
-        $table->resetOffset();
-        $table->resetFilter();
-
-        $this->showContent();
     }
 
     public function resetTestsFilter(): void

@@ -35,7 +35,7 @@ class ilTestOverviewPlugin extends ilRepositoryObjectPlugin
 
     public static function _getIcon(string $a_type): string
     {
-        return ilUtil::getImagePath("icon_$a_type.svg", 'Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
+        return './Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/default/images/icon_xtov.svg';
     }
 
     protected function uninstallCustom(): void

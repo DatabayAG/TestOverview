@@ -396,7 +396,7 @@ class ilObjTestOverview extends ilObjectPlugin
         return $this->test_obj_id_by_ref_id;
     }
 
-    public function getTest($obj_id)
+    public function getTest($obj_id): ilObjTest
     {
         if (!isset($this->test_objects[$obj_id])) {
             $this->test_objects[$obj_id] = ilObjectFactory::getInstanceByObjId($obj_id);
@@ -469,7 +469,7 @@ class ilObjTestOverview extends ilObjectPlugin
                 continue;
             }
 
-            if ($test->getPassScoring() == SCORE_LAST_PASS) {
+            if ($test->getPassScoring() == \ilObjTest::SCORE_LAST_PASS) {
                 $is_finished = false;
                 if ($row['last_finished_pass'] != null && $row['sequences'] - 1 == $row['last_finished_pass']) {
                     $is_finished = true;

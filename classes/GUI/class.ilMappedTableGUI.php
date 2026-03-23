@@ -101,25 +101,6 @@ abstract class ilMappedTableGUI extends ilTable2GUI
         $params = $this->getParams();
 
         $filters = $this->getFilters();
-        $ref_id = $this->parent_obj->getRefId();
-        $filters = [
-          'flt_participant_name' => $_SESSION['table_xtov_filter_participant_'.$ref_id],
-          'flt_group_name' => $_SESSION['table_xtov_filter_group_'.$ref_id],
-          'flt_own' => (int) $_SESSION['table_xtov_filter_ownresults_'.$ref_id]
-        ];
-
-        /*
-        Array
-        (
-            [overview_id] => 1616 -> obj
-            [flt_participant_name] => asd
-            [flt_group_name] => 1593 ->
-            [flt_own] => 1
-        )
-            $_SESSION['table_xtov_filter_participant_'.$ref_id] = $participant;
-            $_SESSION['table_xtov_filter_group_'.$ref_id] = $group;
-            $_SESSION['table_xtov_filter_ownresults_'.$ref_id] = $own;
-         */
 
         /* Execute query. */
         $data = $this->getMapper()->getList($params, $filters);

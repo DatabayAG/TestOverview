@@ -270,13 +270,24 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     public function initCourseTests(): void
     {
         $pnode = $this->tree->getParentNodeData((int) $this->request->getQueryParams()['ref_id']);
-        $otype = ilObject::_lookupType((int) $pnode['ref_id'], true); // Parent node is 'crs'
-        $tsts = $this->tree->getFilteredSubTree((int) $pnode['ref_id'], ['tst']);  // and has 'tst's
+        $course_ref_id = (int) $pnode['ref_id'];
 
         $refs = [];
-        foreach($tsts as $tst) {
-            $refs[] = $tst['child'];
-        }
+
+        // Recursive function to collect all test ref_ids under a given node
+        $collectTests = function($parent_ref_id) use (&$collectTests, &$refs) {
+            // Get all children of this node
+            $children = $this->tree->getChilds($parent_ref_id);
+            foreach ($children as $child) {
+                if ($child['type'] === 'tst') {
+                    $refs[] = $child['ref_id'];
+                } elseif ($child['type'] === 'fold') {
+                    $collectTests($child['ref_id']);
+                }
+            }
+        };
+
+        $collectTests($course_ref_id);
 
         $num_nodes = 0;
         foreach($refs as $ref_id) {

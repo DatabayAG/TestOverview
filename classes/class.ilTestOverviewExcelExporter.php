@@ -97,7 +97,7 @@ class ilTestOverviewExcelExporter
                 $value = implode(', ', $value);
             }
             $col++;
-
+            $value = (string)$value;
 
             $color = "FFFFFF";
             if(str_replace("##no-result##", '', $value) !== $value) {

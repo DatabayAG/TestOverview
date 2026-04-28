@@ -90,6 +90,26 @@ class ilTestOverviewData
             $this->TestOverviewObject->gatherTestData($this->TestOverviewObject->getTest($obj_id), $this->evalDataByTestId);
         }
 
+        if($this->TestOverviewObject->getResultColumn()) {
+            if ($this->TestOverviewObject->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
+                $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
+            } else {
+                $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_sum');
+            }
+        }
+
+        if($this->TestOverviewObject->getPointsColumn()) {
+            $points = "";
+            if($this->full_max > 0) {
+                $points = " (" . $this->full_max . " " . $this->lng->txt('points') . ")";
+            }
+            $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_points') . $points;
+        }
+
+        if($this->TestOverviewObject->getAverageColumn()) {
+            $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_avg');
+        }
+
         return $this->export_header_data;
     }
 
@@ -151,9 +171,9 @@ class ilTestOverviewData
             foreach($row_data as $item) {
                 $row_data2[] = $item;
             }
-            //foreach ($this->temp_results as $item) {
-            //    $row_data2[] = $item;
-            //}
+            foreach ($this->temp_results as $item) {
+                $row_data2[] = $item;
+            }
             $this->export_row_data[] = $row_data2;
             $this->temp_results = array();
         }
@@ -202,7 +222,22 @@ class ilTestOverviewData
 
     protected function populateEvaluationColumns($results, $reached_points, $max_points)
     {
-        $this->temp_results[] = '##no-result##';
+        if($this->TestOverviewObject->getResultColumn()) {
+            if       (count($results)) {
+                if($this->TestOverviewObject->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
+                    if($max_points === 0) {
+                        $points = '0.00 %';
+                    } else {
+                        $points = sprintf("%.2f %%", ($reached_points / $max_points) * 100);
+                    }
+                } else {
+                    $points = sprintf("%.2f", $reached_points) . ' / ' . sprintf("%.2f", $max_points);
+                }
+            } else {
+                $points = "0.00 %";
+            }
+            $this->temp_results[] = $points;
+        }
 
         $t_results = [];
         foreach ($results as $result) {

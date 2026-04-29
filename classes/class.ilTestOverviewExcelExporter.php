@@ -104,7 +104,7 @@ class ilTestOverviewExcelExporter
                 $color = "999999";
             } elseif (str_replace('##red-result##', '', $value) !== $value) {
                 $color = "FF0000";
-            } elseif (str_replace('##green_result##', '', $value) !== $value) {
+            } elseif (str_replace('##green-result##', '', $value) !== $value) {
                 $color = "00CC00";
             } elseif (str_replace('##yellow-result##', '', $value) !== $value) {
                 $color = "FFC100";

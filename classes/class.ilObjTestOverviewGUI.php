@@ -60,7 +60,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
     public function getAfterCreationCmd(): string
     {
-        return 'showContent';
+        return 'editSettings';
     }
 
     public function getStandardCmd(): string
@@ -158,9 +158,10 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     protected function showContent(): void
     {
         $this->tabs->activateTab("content");
+        $this->pruneMembershipScope();
 
         $mapper = new ilOverviewMapper();
-        $groups = $mapper->getGroupPairs($this->getObject()->getId());
+        $groups = $mapper->getGroupPairs($this->getObject()->getId(), $this->object->getRefId());
 
         /* Configure content UI */
         $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
@@ -218,6 +219,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     protected function editSettings(): void
     {
         $this->tabs->activateTab('properties');
+        $this->pruneMembershipScope();
         $this->initSettingsForm();
         $this->populateSettings();
         $this->tpl->setContent($this->renderSettings());
@@ -400,18 +402,8 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
                 $post['membership_ids'] = array();
             }
 
-            /* Executing the registered test retrieval again with the same filters
-               allows to determine which tests are really removed. */
-            $mapper = new ilMembershipMapper();
-            $displayedIds    = array();
-            $displayedGroups = $mapper->getList(array(), $this->getMembershipList()->filter);
-            foreach ($displayedGroups['items'] as $grp) {
-                $displayedIds[] = $grp->obj_id;
-            }
-            $displayedIds = array_intersect($displayedIds, array_keys($overviewGroups));
-
             /* Check for deleted/added IDs and execute corresponding routine. */
-            $deletedIds = array_diff($displayedIds, $post['membership_ids']);
+            $deletedIds = array_diff(array_keys($overviewGroups), $post['membership_ids']);
             $addedIds   = array_diff($post['membership_ids'], array_keys($overviewGroups));
 
             foreach ($deletedIds as $groupId) {
@@ -536,7 +528,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $participant = $this->retrieveFromRequest('participant', 'string');
         $group = (int) $this->retrieveFromRequest('membership', 'string');
         $own = (bool) $this->retrieveFromRequest('own_results', 'string');
-        $ref_id = (int) $this->retrieveFromRequest('ref_id', 'string');
+        $ref_id = $this->object->getRefId();
 
         if($this->hasValue('post', 'apply_filter')) {
             $_SESSION['table_xtov_filter_participant_'.$ref_id] = $participant;
@@ -550,7 +542,20 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
         $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
         $table->resetOffset();
-//        $table->writeFilterToSession();
+
+        $this->showContent();
+    }
+
+    public function resetOverviewFilter(): void
+    {
+        global $_SESSION;
+        $ref_id = $this->object->getRefId();
+        unset($_SESSION['table_xtov_filter_participant_'.$ref_id]);
+        unset($_SESSION['table_xtov_filter_group_'.$ref_id]);
+        unset($_SESSION['table_xtov_filter_ownresults_'.$ref_id]);
+
+        $table = new ilTestOverviewTableGUI($this, 'showContent', new ilTestOverviewData($this->object));
+        $table->resetOffset();
 
         $this->showContent();
     }
@@ -643,5 +648,14 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $this->lng->loadLanguageModule('cntr');
         $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('cntr_saved_sorting'));
         $this->editSettings();
+    }
+
+    private function pruneMembershipScope(): void
+    {
+        $scope_obj_ids = ilTestOverviewScopeHelper::resolveScopeObjIds(
+            $this->tree,
+            $this->object->getRefId()
+        );
+        $this->object->pruneOutOfScopeMembershipGroups($scope_obj_ids);
     }
 }

@@ -351,39 +351,51 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
      */
     public function formatData(array $data): array
     {
-        /* For each group object we fetched, we need
-           to retrieve the members in order to have
-           a list of Participant. */
         $formatted = array(
             'items' => array(),
-            'cnt'	=> 0);
+            'cnt' => 0
+        );
 
-        if(!$data['items']) {
-            $formatted = $this->getMapper()->getUniqueTestParticipants(array_keys((array) $this->to_data->permissionsAccessIndex));
-            $formatted['items'] = $this->fetchUserInformation($formatted['items']);
-            return $this->sortByFullName($formatted);
+        if (count($this->overview->getUniqueTests()) === 0) {
+            return $formatted;
         }
 
-        foreach ($data['items'] as $item) {
-            $container = ilObjectFactory::getInstanceByObjId((int)$item->obj_id, false);
-
-            if ($container === false) {
-                throw new OutOfRangeException();
-            } elseif (! empty($this->filter['flt_group_name'])
-                    && $container->getId() != $this->filter['flt_group_name']) {
-                /* Filter current group */
-                continue;
-            }
-
-            $participants = $this->getMembersObject($item);
-            /* Fetch member object by ID to avoid one-per-row
-               SQL queries. */
-            foreach ($participants->getMembers() as $usrId) {
-                $formatted['items'][$usrId] = $usrId;
-            }
+        $test_obj_ids = $this->to_data->permissionsAccessIndex->getKeys();
+        if ($test_obj_ids === []) {
+            return $formatted;
         }
 
-        $formatted['items'] = $this->fetchUserInformation($formatted['items']);
+        $participant_data = $this->getMapper()->getUniqueTestParticipants($test_obj_ids);
+        $usr_ids = $participant_data['items'];
+
+        $scope_obj_ids = ilTestOverviewScopeHelper::resolveScopeObjIds(
+            $GLOBALS['DIC']->repositoryTree(),
+            $this->parent_obj->getRefId()
+        );
+        $membership_group_ids = $this->overview->getScopedParticipantGroupIds($scope_obj_ids);
+
+        if ($membership_group_ids !== []) {
+            $group_member_ids = array();
+            foreach ($membership_group_ids as $group_id) {
+                if (! empty($this->filter['flt_group_name'])
+                    && (int) $group_id != (int) $this->filter['flt_group_name']) {
+                    continue;
+                }
+
+                $container = new stdClass();
+                $container->obj_id = $group_id;
+                $container->type = $GLOBALS['DIC']['ilObjDataCache']->lookupType($group_id);
+
+                $participants = $this->getMembersObject($container);
+                foreach ($participants->getMembers() as $usr_id) {
+                    $group_member_ids[(int) $usr_id] = true;
+                }
+            }
+
+            $usr_ids = array_values(array_intersect($usr_ids, array_keys($group_member_ids)));
+        }
+
+        $formatted['items'] = $this->fetchUserInformation($usr_ids);
 
         return $this->sortByFullName($formatted);
     }
@@ -886,68 +898,4 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         return $this->export_row_data;
     }
 
-    /**
-     *    Populate the TableGUI using the Mapper.
-     *
-     *    The populate() method should be called
-     *    to fill the overview table with data.
-     *    The getList() method is called on the
-     *    registered mapper instance. The formatData()
-     *    method should be overloaded to handle specific
-     *    cases of displaying or ordering rows.
-     *
-     * @throws ilException
-     */
-    public function populate(): ilTOMappedTableGUI
-    {
-        if($this->getExternalSegmentation() && $this->getExternalSorting()) {
-            $this->determineOffsetAndOrder();
-        } elseif(!$this->getExternalSegmentation() && $this->getExternalSorting()) {
-            $this->determineOffsetAndOrder(true);
-        } else {
-            throw new ilException('invalid table configuration: extSort=false / extSegm=true');
-        }
-
-        /* Configure query execution */
-        $params = array();
-        if($this->getExternalSegmentation()) {
-            $params['limit'] = $this->getLimit();
-            $params['offset'] = $this->getOffset();
-        }
-        if($this->getExternalSorting()) {
-            $params['order_field'] = $this->getOrderField();
-            $params['order_direction'] = $this->getOrderDirection();
-        }
-
-        $overview = $this->getParentObject()->getObject();
-        $filters  = array("overview_id" => $overview->getId()) + $this->filter;
-
-        $ref_id = $this->parent_obj->getRefId();
-        $filters = [
-            'flt_participant_name' => $_SESSION['table_xtov_filter_participant_'.$ref_id] ?? '',
-            'flt_group_name' => $_SESSION['table_xtov_filter_group_'.$ref_id] ?? 0,
-            'flt_own' => (int) ($_SESSION['table_xtov_filter_ownresults_'.$ref_id] ?? 0)
-        ];
-
-        /* Execute query. */
-        $data = $this->getMapper()->getList($params, $filters);
-
-        if(!count($data['items']) && $this->getOffset() > 0) {
-            /* Query again, offset was incorrect. */
-            $this->resetOffset();
-            $data = $this->getMapper()->getList($params, $filters);
-        }
-
-        /* Post-query logic. Implement custom sorting or display
-           in formatData overload. */
-        $data = $this->formatData($data);
-
-        $this->setData($this->buildTableRowsArray($data['items']));
-
-        if($this->getExternalSegmentation()) {
-            $this->setMaxCount($data['cnt']);
-        }
-
-        return $this;
-    }
 }

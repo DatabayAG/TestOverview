@@ -75,14 +75,26 @@ class ilOverviewMapper extends ilDataMapper
      *	@param	integer	$overviewId
      *	@return array	Where index = obj_id and value = group title
      */
-    public function getGroupPairs($overviewId): array
+    public function getGroupPairs($overviewId, int $overview_ref_id = 0): array
     {
-        $pairs   = array();
-        $rawData = $this->getList(array(), array("overview_id" => $overviewId));
-        foreach ($rawData['items'] as $item) {
-            $object = ilObjectFactory::getInstanceByObjId((int)$item->obj_id, false);
-            if($object !== null) {
-                $pairs[$item->obj_id] = $object->getTitle();
+        $pairs = array();
+        if ($overview_ref_id <= 0) {
+            return $pairs;
+        }
+
+        $scope_obj_ids = ilTestOverviewScopeHelper::resolveScopeObjIds(
+            $GLOBALS['DIC']->repositoryTree(),
+            $overview_ref_id
+        );
+        $overview = ilObjectFactory::getInstanceByObjId((int) $overviewId, false);
+        if (!$overview instanceof ilObjTestOverview) {
+            return $pairs;
+        }
+
+        foreach ($overview->getScopedParticipantGroupIds($scope_obj_ids) as $group_id) {
+            $object = ilObjectFactory::getInstanceByObjId((int) $group_id, false);
+            if ($object !== null) {
+                $pairs[$group_id] = $object->getTitle();
             }
         }
 

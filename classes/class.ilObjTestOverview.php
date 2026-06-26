@@ -436,6 +436,32 @@ class ilObjTestOverview extends ilObjectPlugin
         return $this->groups;
     }
 
+    /**
+     * @param int[] $scope_obj_ids
+     * @return int[]
+     */
+    public function getScopedParticipantGroupIds(array $scope_obj_ids): array
+    {
+        return ilTestOverviewScopeHelper::filterObjIdsToScope(
+            array_map('intval', array_keys($this->getParticipantGroups(true))),
+            $scope_obj_ids
+        );
+    }
+
+    /**
+     * Removes membership filters that are outside the current parent scope.
+     *
+     * @param int[] $scope_obj_ids
+     */
+    public function pruneOutOfScopeMembershipGroups(array $scope_obj_ids): void
+    {
+        foreach (array_keys($this->getParticipantGroups(true)) as $group_id) {
+            if (!in_array((int) $group_id, $scope_obj_ids, true)) {
+                $this->rmGroup($group_id);
+            }
+        }
+    }
+
     public function gatherTestData(\ilObjTest $test, array &$data): void
     {
         global $ilDB;

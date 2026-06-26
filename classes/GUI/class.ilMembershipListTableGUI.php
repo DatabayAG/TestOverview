@@ -26,6 +26,9 @@ declare(strict_types=1);
 class ilMembershipListTableGUI extends ilMappedTableGUI
 {
     private ilDBInterface $ilDB;
+    private ilTree $tree;
+    /** @var array<int, int> obj_id => member count */
+    private array $member_counts = [];
     public array $filter = array();
 
     /**
@@ -39,8 +42,9 @@ class ilMembershipListTableGUI extends ilMappedTableGUI
         /**
          *	@var ilCtrl	$ilCtrl
          */
-        global $ilCtrl, $ilDB;
+        global $ilCtrl, $ilDB, $tree;
         $this->ilDB = $ilDB;
+        $this->tree = $tree;
 
         /* Pre-configure table */
         $this->setId(sprintf(
@@ -98,19 +102,55 @@ class ilMembershipListTableGUI extends ilMappedTableGUI
         $this->filter['flt_grp_name'] = $gname->getValue();
     }
 
+    public function getFilters(): array
+    {
+        return parent::getFilters() + [
+            'scope_obj_ids' => $this->resolveScopeObjIds(),
+        ];
+    }
+
+    public function formatData(array $data): array
+    {
+        global $DIC;
+
+        $this->member_counts = [];
+        $access = $DIC->access();
+        $filtered = array(
+            'items' => array(),
+            'cnt' => $data['cnt'] ?? 0,
+        );
+
+        foreach ($data['items'] as $item) {
+            if (!$access->checkAccess('read', '', (int) $item->ref_id)) {
+                continue;
+            }
+
+            $filtered['items'][] = $item;
+            $this->member_counts[(int) $item->obj_id] = $this->getMembersObject($item)->getCountMembers();
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function resolveScopeObjIds(): array
+    {
+        return ilTestOverviewScopeHelper::resolveScopeObjIds(
+            $this->tree,
+            $this->getParentObject()->getRefId()
+        );
+    }
+
     /**
      *    Fill a table row.
      *
-     *    This method is called internally by ilias to
-     *    fill a table row according to the row template.
-     *
      * @param stdClass $a_set
-     * @internal param \ilObjTest $test
-     *
      */
     protected function fillRow($a_set): void
     {
-        $members = $this->getMembersObject($a_set)->getCountMembers();
+        $members = $this->member_counts[(int) $a_set->obj_id] ?? 0;
         $label   = $this->lng->txt('rep_robj_xtov_membership_count_members');
 
         $this->tpl->setVariable('VAL_ID', $a_set->obj_id);

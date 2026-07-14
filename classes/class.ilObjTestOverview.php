@@ -455,6 +455,11 @@ class ilObjTestOverview extends ilObjectPlugin
      */
     public function pruneOutOfScopeMembershipGroups(array $scope_obj_ids): void
     {
+        // Fallback-Schutz: Bei nicht aufloesbarem Scope niemals persistierte Filter loeschen.
+        if ($scope_obj_ids === []) {
+            return;
+        }
+
         foreach (array_keys($this->getParticipantGroups(true)) as $group_id) {
             if (!in_array((int) $group_id, $scope_obj_ids, true)) {
                 $this->rmGroup($group_id);

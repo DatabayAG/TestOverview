@@ -153,8 +153,10 @@ class ilTestOverviewData
                                 }
                             }
                             $row_data[] = $result;
+                            $results[] = $result;
                         } else {
                             $row_data[] = " ";
+                            $results[] = 0;
                         }
                     } else {
                         $row_data[] = " ";
@@ -251,8 +253,6 @@ class ilTestOverviewData
                 $points = "";
             }
             $this->temp_results[] = $points;
-        } else {
-            $this->temp_results[] = $results[0] ?? '##no-result##';
         }
 
         if($this->TestOverviewObject->getAverageColumn()) {

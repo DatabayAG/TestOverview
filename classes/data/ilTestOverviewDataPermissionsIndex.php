@@ -9,9 +9,9 @@ class ilTestOverviewDataPermissionsIndex implements ArrayAccess
         return isset($this->data[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset) : mixed
     {
-        return isset($this->data[$offset]) ? $this->data[$offset] : null;
+        return $this->data[$offset] ?? null;
     }
 
     public function offsetSet($offset, $value) : void

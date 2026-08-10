@@ -354,7 +354,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             'cnt'	=> 0);
 
         if(!$data['items']) {
-            $formatted = $this->getMapper()->getUniqueTestParticipants(array_keys((array) $this->to_data->permissionsAccessIndex));
+            $formatted = $this->getMapper()->getUniqueTestParticipants($this->getFallbackTestObjIds());
             $formatted['items'] = $this->fetchUserInformation($formatted['items']);
             return $this->sortByFullName($formatted);
         }
@@ -363,7 +363,8 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             $container = ilObjectFactory::getInstanceByObjId((int)$item->obj_id, false);
 
             if ($container === false) {
-                throw new OutOfRangeException();
+                // Skip stale container relations instead of breaking the whole table.
+                continue;
             } elseif (! empty($this->filter['flt_group_name'])
                     && $container->getId() != $this->filter['flt_group_name']) {
                 /* Filter current group */
@@ -378,6 +379,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             }
         }
 
+        if (!$formatted['items']) {
+            $formatted = $this->getMapper()->getUniqueTestParticipants($this->getFallbackTestObjIds());
+        }
+
         $formatted['items'] = $this->fetchUserInformation($formatted['items']);
 
         return $this->sortByFullName($formatted);
@@ -386,6 +391,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
     private function fetchUserInformation($usr_ids): array
     {
         global $ilDB, $ilUser;
+
+        if (!$usr_ids) {
+            return array();
+        }
 
         $usr_id__IN__usrIds = $ilDB->in('usr_id', $usr_ids, false, 'integer');
 
@@ -428,6 +437,31 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         return $users;
     }
 
+    private function getFallbackTestObjIds(): array
+    {
+        $obj_ids = array();
+
+        foreach ((array) $this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
+            if ($ref_id !== false) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        foreach ((array) $this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
+            if ($ref_id !== false) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        if (!$obj_ids) {
+            foreach (array_keys($this->overview->getUniqueTests()) as $obj_id) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        return array_values($obj_ids);
+    }
+
     /**
      * @param array|null $result
      * @param int $activeId
@@ -451,7 +485,17 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         }
 
         if ($this->overview->getTest($testObjId)->getPassScoring() == SCORE_LAST_PASS) {
-            $status = $this->determineStatusForScoreLastPassTests((bool)$row['is_finished'], $is_passed);
+            $status = 'orange-result';
+
+            if(!(bool)$row['is_finished'] && !$is_passed) {
+                $status = 'red-result';
+            } else if (!(bool)$row['is_finished'] && $is_passed) {
+                $status = 'green-result';
+            } else if ((bool)$row['is_finished'] && !$is_passed) {
+                $status = 'red-result';
+            } else if ((bool)$row['is_finished'] && $is_passed) {
+                $status = 'green-result';
+            }
         } else {
             $status = 'orange-result';
 

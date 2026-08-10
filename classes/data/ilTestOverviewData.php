@@ -151,14 +151,18 @@ class ilTestOverviewData
                                 } else {
                                     $result = $testResult['pass']['total_reached_points'] . ' / ' . $testResult['pass']['total_max_points'];
                                 }
+                                $a = 1;
                             }
-                            $row_data[] = $result;
+                            $row_result = $result;
                         } else {
-                            $row_data[] = " ";
+                            $row_result = " ";
                         }
                     } else {
-                        $row_data[] = " ";
+                        $row_result = " ";
                     }
+
+                    $row_data[] = $row_result;
+                    // color
                 }
             }
 

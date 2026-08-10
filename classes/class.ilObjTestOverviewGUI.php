@@ -478,8 +478,8 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $this->form->addItem($ta);
 
         $tp = new ilRadioGroupInputGUI($this->txt('result_presentation'), 'result_presentation');
-        $tp->addOption(new ilRadioOption($this->txt('percentage'), 'percentage'));
-        $tp->addOption(new ilRadioOption($this->txt('act_max'), 'act_max'));
+        $tp->addOption(new ilRadioOption($this->txt('percentage'), ilObjTestOverview::PRESENTATION_PERCENTAGE));
+        $tp->addOption(new ilRadioOption($this->txt('act_max'), ilObjTestOverview::PRESENTATION_POINTS));
         $this->form->addItem($tp);
 
         $result_column = new ilCheckboxInputGUI($this->txt('result_column'), 'result_column');

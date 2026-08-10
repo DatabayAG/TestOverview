@@ -41,6 +41,15 @@ class ilObjTestOverview extends ilObjectPlugin
     private array $groups = [];
     private ilOverviewMapper $mapper;
 
+    private function normalizeResultPresentation(?string $result_presentation): string
+    {
+        return match ($result_presentation) {
+            self::PRESENTATION_PERCENTAGE => self::PRESENTATION_PERCENTAGE,
+            'act_max', self::PRESENTATION_POINTS => self::PRESENTATION_POINTS,
+            default => self::PRESENTATION_PERCENTAGE,
+        };
+    }
+
     public function __construct(int $a_ref_id = 0)
     {
         parent::__construct($a_ref_id);
@@ -62,6 +71,7 @@ class ilObjTestOverview extends ilObjectPlugin
 
     protected function doCreate(bool $clone_mode = false): void
     {
+        $this->result_presentation = $this->normalizeResultPresentation($this->result_presentation);
         $this->getMapper()
              ->insert(
                  "rep_robj_xtov_overview",
@@ -80,6 +90,7 @@ class ilObjTestOverview extends ilObjectPlugin
 
     protected function doUpdate(): void
     {
+        $this->result_presentation = $this->normalizeResultPresentation($this->result_presentation);
         $this->db->update(
             'rep_robj_xtov_overview',
             array(
@@ -109,12 +120,12 @@ class ilObjTestOverview extends ilObjectPlugin
 
         while ($row = $this->db->fetchObject($res)) {
             $this->setId((int) $row->obj_id);
-            $this->result_presentation = $row->result_presentation;
-            $this->result_column = (bool) $row->result_column;
-            $this->points_column = (bool) $row->points_column;
-            $this->average_column = (bool) $row->average_column;
-            $this->enable_excel = (bool) $row->enable_excel;
-            $this->header_points = (bool) $row->header_points;
+            $this->result_presentation = $this->normalizeResultPresentation($row->result_presentation);
+            $this->result_column = $row->result_column === null ? true : (bool) $row->result_column;
+            $this->points_column = $row->points_column === null ? false : (bool) $row->points_column;
+            $this->average_column = $row->average_column === null ? false : (bool) $row->average_column;
+            $this->enable_excel = $row->enable_excel === null ? false : (bool) $row->enable_excel;
+            $this->header_points = $row->header_points === null ? false : (bool) $row->header_points;
         }
     }
 
@@ -141,51 +152,60 @@ class ilObjTestOverview extends ilObjectPlugin
     protected function doCloneObject(ilObject2 $new_obj, int $a_target_id, ?int $a_copy_id = null): void
     {
         global $ilDB;
-        $new_obj->setResultPresentation($this->result_presentation);
 
-        $tests  = $this->getUniqueTests(true);
+        if ($new_obj instanceof self) {
+            $new_obj->setResultPresentation($this->result_presentation);
+            $new_obj->setResultColumn($this->result_column);
+            $new_obj->setPointsColumn($this->points_column);
+            $new_obj->setAverageColumn($this->average_column);
+            $new_obj->setEnableExcel($this->enable_excel);
+            $new_obj->setHeaderPoints($this->header_points);
+        }
+
+        // create() already inserted defaults; update clone row to keep source configuration.
+        $ilDB->update(
+            'rep_robj_xtov_overview',
+            array(
+                'result_presentation' => array('text', $this->normalizeResultPresentation($this->result_presentation)),
+                'result_column' => array('int', (int) $this->result_column),
+                'points_column' => array('int', (int) $this->points_column),
+                'average_column' => array('int', (int) $this->average_column),
+                'enable_excel' => array('int', (int) $this->enable_excel),
+                'header_points' => array('int', (int) $this->header_points),
+            ),
+            array(
+                'obj_id' => array('int', $new_obj->getId())
+            )
+        );
+
+        $tests_by_obj_id  = $this->getUniqueTests(true);
         $groups = $this->getParticipantGroups(true);
 
-        $tests  = array_keys($tests);
+        // rep_robj_xtov_t2o stores test reference ids, not test object ids.
+        $tests = array();
+        foreach ($tests_by_obj_id as $ref_ids) {
+            foreach ((array) $ref_ids as $ref_id) {
+                $tests[(int) $ref_id] = (int) $ref_id;
+            }
+        }
+        $tests = array_values($tests);
         $groups = array_keys($groups);
 
-        $tvals = "";
-        foreach ($tests as $tid) {
-            $tvals .= (empty($tvals) ? "" : ",") . "({$new_obj->getId()}, $tid)";
-        }
-
-        $gvals = "";
-        foreach ($groups as $gid) {
-            $gvals .= (empty($gvals) ? "" : ",") . "({$new_obj->getId()}, $gid)";
-        }
-
-        $baseSQLTst = "
-			INSERT INTO %s
-				(obj_id_overview, ref_id_%s)
-			VALUES
-				%s";
-
-        $baseSQLFilter = "
-			INSERT INTO %s
-				(obj_id_overview, obj_id_%s)
-			VALUES
-				%s";
-
         /* Insert tests */
-        $ilDB->manipulate(sprintf(
-            $baseSQLTst,
-            "rep_robj_xtov_t2o",
-            "test",
-            $tvals
-        ));
+        foreach ($tests as $tid) {
+            $ilDB->insert('rep_robj_xtov_t2o', array(
+                'obj_id_overview' => array('integer', $new_obj->getId()),
+                'ref_id_test' => array('integer', (int) $tid)
+            ));
+        }
 
         /* Insert groups */
-        $ilDB->manipulate(sprintf(
-            $baseSQLFilter,
-            "rep_robj_xtov_p2o",
-            "grpcrs",
-            $gvals
-        ));
+        foreach ($groups as $gid) {
+            $ilDB->insert('rep_robj_xtov_p2o', array(
+                'obj_id_overview' => array('integer', $new_obj->getId()),
+                'obj_id_grpcrs' => array('integer', (int) $gid)
+            ));
+        }
 
         $this->cloneMetaData($new_obj);
     }
@@ -488,7 +508,7 @@ class ilObjTestOverview extends ilObjectPlugin
 
     public function setResultPresentation(string $result_presentation): void
     {
-        $this->result_presentation = $result_presentation;
+        $this->result_presentation = $this->normalizeResultPresentation($result_presentation);
     }
 
     public function getResultColumn(): bool

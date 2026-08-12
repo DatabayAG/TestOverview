@@ -360,9 +360,14 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
             return $formatted;
         }
 
-        $test_obj_ids = $this->to_data->permissionsAccessIndex->getKeys();
-        if ($test_obj_ids === []) {
-            return $formatted;
+        if(!$data['items']) {
+            $data['items'] = $this->getContextContainerItems();
+        }
+
+        if(!$data['items']) {
+            $formatted = $this->getMapper()->getUniqueTestParticipants($this->getFallbackTestObjIds());
+            $formatted['items'] = $this->fetchUserInformation($formatted['items']);
+            return $this->sortByFullName($formatted);
         }
 
         $participant_data = $this->getMapper()->getUniqueTestParticipants($test_obj_ids);
@@ -443,6 +448,76 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         }
 
         return $users;
+    }
+
+    private function getContextContainerItems(): array
+    {
+        global $tree;
+
+        if (!isset($tree) || !is_object($tree)) {
+            return array();
+        }
+
+        $overview_ref_id = (int) $this->overview->getRefId();
+        if ($overview_ref_id <= 0) {
+            return array();
+        }
+
+        $path_ids = (array) $tree->getPathId($overview_ref_id);
+        if (!$path_ids) {
+            return array();
+        }
+
+        $path_ids = array_reverse($path_ids);
+        foreach ($path_ids as $ref_id) {
+            $ref_id = (int) $ref_id;
+            if ($ref_id === $overview_ref_id) {
+                continue;
+            }
+
+            $node = $tree->getNodeData($ref_id);
+            if (!is_array($node) || !isset($node['type'], $node['obj_id'])) {
+                continue;
+            }
+
+            if ($node['type'] !== 'crs' && $node['type'] !== 'grp') {
+                continue;
+            }
+
+            $item = new stdClass();
+            $item->obj_id = (int) $node['obj_id'];
+            $item->type = (string) $node['type'];
+
+            // Use nearest ancestor container (course/group) as implicit participant scope.
+            return array($item);
+        }
+
+        return array();
+    }
+
+    private function getFallbackTestObjIds(): array
+    {
+        $obj_ids = array();
+
+        foreach ((array) $this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
+            if ($ref_id !== false) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        foreach ((array) $this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
+            if ($ref_id !== false) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        if (!$obj_ids) {
+            foreach (array_keys($this->overview->getUniqueTests()) as $obj_id) {
+                $obj_ids[(int) $obj_id] = (int) $obj_id;
+            }
+        }
+
+        return array_values($obj_ids);
     }
 
     /**

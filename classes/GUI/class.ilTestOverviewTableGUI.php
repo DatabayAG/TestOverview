@@ -354,6 +354,10 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
             'cnt'	=> 0);
 
         if(!$data['items']) {
+            $data['items'] = $this->getContextContainerItems();
+        }
+
+        if(!$data['items']) {
             $formatted = $this->getMapper()->getUniqueTestParticipants($this->getFallbackTestObjIds());
             $formatted['items'] = $this->fetchUserInformation($formatted['items']);
             return $this->sortByFullName($formatted);
@@ -435,6 +439,51 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
         }
 
         return $users;
+    }
+
+    private function getContextContainerItems(): array
+    {
+        global $tree;
+
+        if (!isset($tree) || !is_object($tree)) {
+            return array();
+        }
+
+        $overview_ref_id = (int) $this->overview->getRefId();
+        if ($overview_ref_id <= 0) {
+            return array();
+        }
+
+        $path_ids = (array) $tree->getPathId($overview_ref_id);
+        if (!$path_ids) {
+            return array();
+        }
+
+        $path_ids = array_reverse($path_ids);
+        foreach ($path_ids as $ref_id) {
+            $ref_id = (int) $ref_id;
+            if ($ref_id === $overview_ref_id) {
+                continue;
+            }
+
+            $node = $tree->getNodeData($ref_id);
+            if (!is_array($node) || !isset($node['type'], $node['obj_id'])) {
+                continue;
+            }
+
+            if ($node['type'] !== 'crs' && $node['type'] !== 'grp') {
+                continue;
+            }
+
+            $item = new stdClass();
+            $item->obj_id = (int) $node['obj_id'];
+            $item->type = (string) $node['type'];
+
+            // Use nearest ancestor container (course/group) as implicit participant scope.
+            return array($item);
+        }
+
+        return array();
     }
 
     private function getFallbackTestObjIds(): array

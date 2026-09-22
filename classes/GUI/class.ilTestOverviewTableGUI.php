@@ -370,6 +370,11 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
             return $this->sortByFullName($formatted);
         }
 
+        $test_obj_ids = $this->getFallbackTestObjIds();
+        if ($test_obj_ids === []) {
+            return $formatted;
+        }
+
         $participant_data = $this->getMapper()->getUniqueTestParticipants($test_obj_ids);
         $usr_ids = $participant_data['items'];
 
@@ -499,13 +504,13 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     {
         $obj_ids = array();
 
-        foreach ((array) $this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }
         }
 
-        foreach ((array) $this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }

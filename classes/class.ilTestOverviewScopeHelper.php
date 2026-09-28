@@ -22,7 +22,8 @@ class ilTestOverviewScopeHelper
             $obj_ids[] = (int) $pnode['obj_id'];
         }
 
-        foreach ($tree->getFilteredSubTree((int) $pnode['ref_id'], ['crs', 'grp']) as $node) {
+        $parent_node = $tree->getNodeData((int) $pnode['ref_id']);
+        foreach ($tree->getSubTree($parent_node, true, ['crs', 'grp']) as $node) {
             $obj_ids[] = (int) $node['obj_id'];
         }
 

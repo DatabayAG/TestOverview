@@ -240,11 +240,6 @@ class ilTOTableGUI
         // activate export mode
         if (isset($this->table_request)) {
             $this->export_mode = $this->table_request->getExportMode($this->prefix);
-
-            // template handling
-            if ($this->table_request->getTemplate($this->prefix) != "") {
-                $this->restoreTemplate($this->table_request->getTemplate($this->prefix));
-            }
         }
 
         $this->determineLimit();
@@ -266,8 +261,9 @@ class ilTOTableGUI
         $this->requested_nav_par = $this->table_request->getNavPar($this->getNavParameter());
         $this->requested_nav_par1 = $this->table_request->getNavPar($this->getNavParameter(), 1);
         $this->requested_nav_par2 = $this->table_request->getNavPar($this->getNavParameter(), 2);
-        $this->requested_tmpl_create = $this->table_request->getTemplCreate();
-        $this->requested_tmpl_delete = $this->table_request->getTemplDelete();
+        // ILIAS 11: table view templates removed from TableGUIRequest (see ilTable2GUI).
+        $this->requested_tmpl_create = '';
+        $this->requested_tmpl_delete = '';
     }
 
     public function setOpenFormTag(bool $a_val): void
@@ -1128,8 +1124,7 @@ class ilTOTableGUI
         $ccnt = 0;
         foreach ($this->column as $column) {
             $ccnt++;
-            //tooltip
-            if ($column["tooltip"] != "") {
+            if ($column["tooltip"] != "" && class_exists('ilTooltipGUI', false)) {
                 ilTooltipGUI::addTooltip(
                     "thc_" . $this->getId() . "_" . $ccnt,
                     $column["tooltip"],

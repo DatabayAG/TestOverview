@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -26,10 +28,7 @@ declare(strict_types=1);
 class ilTestListTableGUI extends ilMappedTableGUI
 {
     private ilTree $tree;
-    /**
-     * @var \Psr\Http\Message\RequestInterface|\Psr\Http\Message\ServerRequestInterface
-     */
-    private $request;
+    private ServerRequestInterface $request;
     public array $filter = array();
 
     /**
@@ -87,9 +86,9 @@ class ilTestListTableGUI extends ilMappedTableGUI
         $this->addCommandButton('saveOrder', $this->lng->txt('sorting_save'));
         $this->addCommandButton('initSelectTests', $this->lng->txt('rep_robj_xtov_add_tsts_to_overview'));
 
-        $pnode = $tree->getParentNodeData((int)$this->request->getQueryParams()['ref_id']);
-        $otype = ilObject::_lookupType((int)$pnode['ref_id'], true); // Parent node is 'crs'
-        $tsts = $tree->getFilteredSubTree((int)$pnode['ref_id'], ['tst']);  // and has 'tst's
+        $pnode = $tree->getParentNodeData((int) $this->request->getQueryParams()['ref_id']);
+        $otype = ilObject::_lookupType((int) $pnode['ref_id'], true);
+        $tsts = $tree->getSubTree($pnode, true, ['tst']);
         if($otype == 'crs' && count($tsts) > 0) {
             $this->addCommandButton('initCourseTests', $this->lng->txt('rep_robj_xtov_add_tsts_from_course'));
         }

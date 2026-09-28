@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -30,6 +32,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 {
     private ilSetting $ilSetting;
     private ilObjUser $ilUser;
+    protected ServerRequestInterface $request;
 
     /**
      *	@var ilPropertyFormGUI
@@ -91,7 +94,6 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
                 $this->tabs->setTabActive('meta_data');
                 $this->ctrl->forwardCommand($md_gui);
                 return;
-                break;
 
             case 'ilcommonactiondispatchergui':
                 $this->ctrl->forwardCommand(ilCommonActionDispatcherGUI::getInstanceFromAjaxCall());
@@ -129,7 +131,8 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
                         }
                         $this->checkPermission('read');
                         $this->$cmd();
-                        break;
+
+                        return;
                 }
                 break;
         }
@@ -203,8 +206,7 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
 
         $exporter = new ilTestOverviewExcelExporter();
         $exporter->export('TestOverview', $header_data, $row_data, 'TestOverview', true);
-        //$exporter->export('TestOverview', $table->getExportHeaderData(), $table->getExportRowData(), 'TestOverview', true);
-
+        exit;
     }
 
     protected function renderSettings(): string

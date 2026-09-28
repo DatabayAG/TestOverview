@@ -9,9 +9,14 @@ td.result div.result, td.result a.result
 }
 
 
-.no-perm-result, .no-result, .orange-result, .green-result, .red-result, .red-result:hover
+div.result.no-result,
+div.result.orange-result,
+div.result.green-result,
+div.result.red-result,
+td.result div.result,
+td.result a.result
 {
-	
+	margin: 0.25em 0;
 }
 
 .no-perm-result

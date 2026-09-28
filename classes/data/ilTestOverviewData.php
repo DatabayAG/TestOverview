@@ -9,6 +9,8 @@ class ilTestOverviewData
     private $evalDataByTestId = [];
     private array $export_row_data = [];
     private array $export_header_data = [];
+    /** @var list<string|float> */
+    private array $temp_results = [];
 
     public \ilTestOverviewDataPermissionsIndex $permissionsReadIndex;
     public \ilTestOverviewDataPermissionsIndex $permissionsAccessIndex;
@@ -65,19 +67,14 @@ class ilTestOverviewData
             $title_text = $this->TestOverviewObject->getTest($obj_id)->getTitle();
             /** @var ilObjTest $test_object */
             $test_object = $this->TestOverviewObject->getTest($obj_id);
-            $evaluation = $test_object->getCompleteEvaluationData();
-            $participants = $evaluation->getParticipants();
-            if(count($participants)) {
-                /** @var ilTestEvaluationUserData $participant */
-                $participant = current($participants);
-                $this->full_max = $this->full_max + $participant->getMaxpoints();
+            $max_points = self::resolveMaxPointsForHeader($test_object);
+            if ($max_points !== null) {
+                $this->full_max += $max_points;
             }
 
-            if($this->TestOverviewObject->getPointsColumn() && $this->TestOverviewObject->getHeaderPoints()) {
-                if(count($participants)) {
-                    /** @var ilTestEvaluationUserData $participant */
-                    $participant = current($participants);
-                    $title_text .= ' (' . $participant->getMaxpoints() . ' ' . $this->lng->txt('points') . ')';
+            if ($this->TestOverviewObject->getPointsColumn() && $this->TestOverviewObject->getHeaderPoints()) {
+                if ($max_points !== null) {
+                    $title_text .= ' (' . $max_points . ' ' . $this->lng->txt('points') . ')';
                 } else {
                     $title_text .= ' (? ' . $this->lng->txt('points') . ')';
                 }
@@ -276,5 +273,34 @@ class ilTestOverviewData
 
             $this->temp_results[] = $points;
         }
+    }
+
+    /**
+     * Max points for column headers when the test has attempts or only questions assigned.
+     */
+    public static function resolveMaxPointsForHeader(ilObjTest $test): ?float
+    {
+        $participants = $test->getCompleteEvaluationData()->getParticipants();
+        if (count($participants) > 0) {
+            /** @var ilTestEvaluationUserData $participant */
+            $participant = current($participants);
+
+            return (float) $participant->getMaxpoints();
+        }
+
+        global $DIC;
+        $db = $DIC->database();
+        $res = $db->queryF(
+            'SELECT SUM(q.points) AS point_sum FROM tst_test_question tq
+             INNER JOIN tst_tests t ON t.test_id = tq.test_fi
+             INNER JOIN qpl_questions q ON q.question_id = tq.question_fi
+             WHERE t.obj_fi = %s',
+            ['integer'],
+            [$test->getId()]
+        );
+        $row = $db->fetchAssoc($res);
+        $sum = (float) ($row['point_sum'] ?? 0);
+
+        return $sum > 0 ? $sum : null;
     }
 }

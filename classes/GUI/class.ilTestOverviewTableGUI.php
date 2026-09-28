@@ -23,7 +23,8 @@
  */
 class ilTestOverviewTableGUI extends ilTOMappedTableGUI
 {
-    private $temp_results = array();
+    /** @var list<string|float> */
+    private array $temp_results = [];
     private ilTestOverviewData $to_data;
 
     /**
@@ -44,10 +45,12 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     /**
      * @var \ilObjTestOverview
      */
-    protected $overview;
-    protected $full_max;
-    private $export_header_data;
-    private $export_row_data;
+    protected ilObjTestOverview $overview;
+    protected float $full_max = 0.0;
+    /** @var list<string> */
+    private array $export_header_data = [];
+    /** @var list<array<int, mixed>> */
+    private array $export_row_data = [];
 
     /**
      *	Constructor logic.
@@ -108,19 +111,14 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
             $title_text = $this->overview->getTest($obj_id)->getTitle();
             /** @var ilObjTest $test_object */
             $test_object = $this->overview->getTest($obj_id);
-            $evaluation = $test_object->getCompleteEvaluationData();
-            $participants = $evaluation->getParticipants();
-            if(count($participants)) {
-                /** @var ilTestEvaluationUserData $participant */
-                $participant = current($participants);
-                $this->full_max = $this->full_max + $participant->getMaxpoints();
+            $max_points = ilTestOverviewData::resolveMaxPointsForHeader($test_object);
+            if ($max_points !== null) {
+                $this->full_max += $max_points;
             }
 
-            if($this->overview->getPointsColumn() && $this->overview->getHeaderPoints()) {
-                if(count($participants)) {
-                    /** @var ilTestEvaluationUserData $participant */
-                    $participant = current($participants);
-                    $title_text .= ' (' . $participant->getMaxpoints() . ' ' . $this->lng->txt('points') . ')';
+            if ($this->overview->getPointsColumn() && $this->overview->getHeaderPoints()) {
+                if ($max_points !== null) {
+                    $title_text .= ' (' . $max_points . ' ' . $this->lng->txt('points') . ')';
                 } else {
                     $title_text .= ' (? ' . $this->lng->txt('points') . ')';
                 }
@@ -139,7 +137,7 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         $this->setRowTemplate('tpl.test_overview_row.html', 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
         $this->setDescription($this->lng->txt("rep_robj_xtov_test_overview_description"));
 
-        $cssFile = "./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/css/testoverview.css";
+        $cssFile = 'Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/css/testoverview.css';
         $tpl->addCss($cssFile);
 
         /* Configure table filter */
@@ -161,30 +159,6 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     }
 
     /**
-     * Execute command.
-     */
-    public function executeCommand(): bool
-    {
-        $ilCtrl = $this->ctrl;
-
-        $next_class = $ilCtrl->getNextClass($this);
-        $cmd = $ilCtrl->getCmd();
-
-        switch($next_class) {
-            case 'ilformpropertydispatchgui':
-                include_once './Services/Form/classes/class.ilFormPropertyDispatchGUI.php';
-                $form_prop_dispatch = new ilFormPropertyDispatchGUI();
-                $this->initFilter();
-                $item = $this->getFilterItemByPostVar($this->request->getQueryParams()['postvar']);
-                $form_prop_dispatch->setItem($item);
-                return $ilCtrl->forwardCommand($form_prop_dispatch);
-                break;
-
-        }
-        return false;
-    }
-
-    /**
      *	Initialize the table filters.
      *
      *	This method is called internally to initialize
@@ -199,7 +173,10 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
 
         /* Configure participant group name filter (select) */
         $mapper = new ilOverviewMapper();
-        $groups = $mapper->getGroupPairs((int)$this->getParentObject()->getObject()->getId());
+        $groups = $mapper->getGroupPairs(
+            (int) $this->getParentObject()->getObject()->getId(),
+            (int) $this->parent_obj->getRefId()
+        );
         $groups = array("" => "-- Select --") + $groups;
 
         $gname = new ilSelectInputGUI($this->lng->txt("rep_robj_xtov_overview_flt_group_name"), 'flt_group_name');
@@ -504,13 +481,15 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     {
         $obj_ids = array();
 
-        foreach ($this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsAccessIndex->getKeys() as $obj_id) {
+            $ref_id = $this->to_data->permissionsAccessIndex[$obj_id];
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }
         }
 
-        foreach ($this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsReadIndex->getKeys() as $obj_id) {
+            $ref_id = $this->to_data->permissionsReadIndex[$obj_id];
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }
@@ -565,11 +544,11 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     }
 
     /**
-     * @param $is_finished
-     * @param $passed
-     * @return int
+     * @param bool $is_finished
+     * @param bool $passed
+     * @return string CSS class suffix
      */
-    protected function determineStatusForScoreLastPassTests($is_finished, $passed)
+    protected function determineStatusForScoreLastPassTests($is_finished, $passed): string
     {
         $status = 'orange-result';
 
@@ -587,10 +566,10 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
     }
 
     /**
-     * @param $passed
-     * @return int
+     * @param bool $passed
+     * @return string CSS class suffix (e.g. green-result)
      */
-    protected function determineLpStatus($passed)
+    protected function determineLpStatus($passed): string
     {
         $status = 'red-result';
 
@@ -857,9 +836,7 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         foreach ((array) $this->column as $column) {
             $ccnt++;
 
-            //tooltip
-            if ($column["tooltip"] != "") {
-                include_once("./Services/UIComponent/Tooltip/classes/class.ilTooltipGUI.php");
+            if ($column["tooltip"] != "" && class_exists('ilTooltipGUI', false)) {
                 ilTooltipGUI::addTooltip("thc_" . $this->getId() . "_" . $ccnt, $column["tooltip"]);
             }
             if ((!$this->enabled["sort"] || $column["sort_field"] == "" || $column["is_checkbox_action_column"]) && !array_key_exists('link',$column)) {
@@ -901,7 +878,7 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
 
             $order_dir = "asc";
 
-            if (isset($colum['sort_field']) && $column["sort_field"] == $this->order_field) {
+            if (isset($column['sort_field']) && $column["sort_field"] == $this->order_field) {
                 $order_dir = $this->sort_order;
 
                 $lng_change_sort = $this->lng->txt("change_sort_direction");

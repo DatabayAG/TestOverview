@@ -9,6 +9,8 @@ class ilTestOverviewData
     private $evalDataByTestId = [];
     private array $export_row_data = [];
     private array $export_header_data = [];
+    /** @var list<string|float> */
+    private array $temp_results = [];
 
     public \ilTestOverviewDataPermissionsIndex $permissionsReadIndex;
     public \ilTestOverviewDataPermissionsIndex $permissionsAccessIndex;

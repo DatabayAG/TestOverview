@@ -28,4 +28,12 @@ class ilTestOverviewDataPermissionsIndex implements ArrayAccess
         unset($this->data[$offset]);
     }
 
+    /**
+     * @return int[]
+     */
+    public function getKeys(): array
+    {
+        return array_keys($this->data);
+    }
+
 }

@@ -490,13 +490,15 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
     {
         $obj_ids = array();
 
-        foreach ((array) $this->to_data->permissionsAccessIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsAccessIndex->getKeys() as $obj_id) {
+            $ref_id = $this->to_data->permissionsAccessIndex[$obj_id];
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }
         }
 
-        foreach ((array) $this->to_data->permissionsReadIndex as $obj_id => $ref_id) {
+        foreach ($this->to_data->permissionsReadIndex->getKeys() as $obj_id) {
+            $ref_id = $this->to_data->permissionsReadIndex[$obj_id];
             if ($ref_id !== false) {
                 $obj_ids[(int) $obj_id] = (int) $obj_id;
             }

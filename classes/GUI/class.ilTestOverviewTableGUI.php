@@ -641,7 +641,7 @@ class ilTestOverviewTableGUI extends ilMappedTableGUI
 
         if($this->overview->getPointsColumn()) {
             if (count($results)) {
-                $points = sprintf("%.2f", array_sum($results));
+                $points = sprintf("%.2f", $reached_points);
             } else {
                 $points = "";
             }

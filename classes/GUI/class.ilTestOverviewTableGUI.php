@@ -626,7 +626,7 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
                 foreach ($results as $result) {
                     $results_new[] = (integer)$result;
                 }
-                $points = sprintf("%.2f", array_sum($results_new));
+                $points = sprintf("%.2f", $reached_points);
             } else {
                 $points = "";
             }

@@ -245,7 +245,7 @@ class ilTestOverviewData
 
         if($this->TestOverviewObject->getPointsColumn()) {
             if (count($results)) {
-                $points = sprintf("%.2f", array_sum($t_results));
+                $points = sprintf("%.2f", $reached_points);
             } else {
                 $points = "";
             }

@@ -29,6 +29,7 @@ test_list_table_title#:#Tests to accumulate in overview '%s'
 test_list_description#:#Please select the tests you want to add to this overview. 
 test_list_hdr_test_title#:#Title
 test_list_hdr_test_info#:#Path to Test
+test_list_anonymous_notice#:#Anonymous. This test is not shown in the overview.
 add_to_overview#:#Add to Overview
 remove_from_overview#:#Remove
 add_to_overview_as_filter#:#Add to Overview as Filter

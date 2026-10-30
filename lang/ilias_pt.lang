@@ -29,6 +29,7 @@ test_list_table_title#:#Testes a serem acumulados na visão geral '%s'
 test_list_description#:#Selecione os testes que você deseja adicionar a esta visão geral. 
 test_list_hdr_test_title#:#Titulo
 test_list_hdr_test_info#:#Caminho para Teste
+test_list_anonymous_notice#:#Anónimo. Este teste não aparece na visão geral.
 add_to_overview#:#Adicionar à visão geral
 remove_from_overview#:#Remover
 add_to_overview_as_filter#:#Adicionar à visão geral como filtro

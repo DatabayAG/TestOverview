@@ -29,6 +29,7 @@ test_list_table_title#:#Zu akkumulierende Tests für die Testübersicht '%s'
 test_list_description#:#Wählen Sie aus, welche Tests in der Inhaltsansicht dieses Objekts akkumuliert werden sollen. Es stehen nur jene Tests zur Verfügung, bei denen Sie das Recht besitzen, die Teststatistiken einzusehen. 
 test_list_hdr_test_title#:#Titel
 test_list_hdr_test_info#:#Pfad zum Test
+test_list_anonymous_notice#:#Anonym. Dieser Test erscheint nicht in der Übersicht.
 add_to_overview#:#Für Übersicht auswählen
 remove_from_overview#:#Auswahl aufheben
 add_to_overview_as_filter#:#Für Übersicht als Filter auswählen

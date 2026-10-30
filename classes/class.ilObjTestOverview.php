@@ -39,6 +39,8 @@ class ilObjTestOverview extends ilObjectPlugin
     private $header_points = false;
 
     private array $groups = [];
+    /** @var int[]|null */
+    private ?array $participant_scope_obj_ids = null;
     private ilOverviewMapper $mapper;
 
     public function __construct(int $a_ref_id = 0)
@@ -266,12 +268,12 @@ class ilObjTestOverview extends ilObjectPlugin
     /**
      *	Add a participant group to the overview.
      *
-     *	The addGroup() method should be called to register
-     *	a participant group in the overview.
+     *	Scalar ids are stored only when they are a live course or group inside
+     *	resolveScopeObjIds() and the caller may list that container's members.
      *
-     *	@params	ilObjCourse|ilObjGroup	$group
+     *	@params	ilObjCourse|ilObjGroup|int	$group
      */
-    public function addGroup($group): void
+    public function addGroup($group): bool
     {
         /**
          * @var $ilDB ilDBInterface
@@ -285,7 +287,12 @@ class ilObjTestOverview extends ilObjectPlugin
             $groupId = $group->getId();
         }
 
-        /* Insert p2o entry (test 2 overview) */
+        $groupId = (int) $groupId;
+        if (!$this->isAuthorizedParticipantSource($groupId)) {
+            return false;
+        }
+
+        /* Insert p2o entry (participant source 2 overview) */
         $ilDB->replace(
             'rep_robj_xtov_p2o',
             array(
@@ -296,6 +303,54 @@ class ilObjTestOverview extends ilObjectPlugin
         );
 
         $this->groups[$groupId] = $group;
+
+        return true;
+    }
+
+    /**
+     * Live course/group inside the overview scope, with member-list permission.
+     */
+    public function isAuthorizedParticipantSource(int $obj_id): bool
+    {
+        if ($obj_id < 1 || !in_array($obj_id, $this->participantScopeObjIds(), true)) {
+            return false;
+        }
+
+        $type = ilObject::_lookupType($obj_id);
+        if ($type !== 'crs' && $type !== 'grp') {
+            return false;
+        }
+
+        $tree = $GLOBALS['DIC']->repositoryTree();
+        $access = $GLOBALS['DIC']->access();
+        foreach (ilObject::_getAllReferences($obj_id) as $ref_id) {
+            $ref_id = (int) $ref_id;
+            if ($ref_id < 1 || !$tree->isInTree($ref_id) || $tree->isDeleted($ref_id)) {
+                continue;
+            }
+            if ($access->checkAccess('manage_members', '', $ref_id)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function participantScopeObjIds(): array
+    {
+        if ($this->participant_scope_obj_ids !== null) {
+            return $this->participant_scope_obj_ids;
+        }
+
+        $this->participant_scope_obj_ids = ilTestOverviewScopeHelper::resolveScopeObjIds(
+            $GLOBALS['DIC']->repositoryTree(),
+            (int) $this->getRefId()
+        );
+
+        return $this->participant_scope_obj_ids;
     }
 
     /**
@@ -385,6 +440,40 @@ class ilObjTestOverview extends ilObjectPlugin
         }
 
         return $this->test_ref_ids_by_obj_id;
+    }
+
+    /**
+     * Anonymity is stored on the test. The participant records stay named.
+     */
+    public static function isAnonymousTest(int $ref_id): bool
+    {
+        $obj_id = ilObject::_lookupObjId($ref_id);
+        if ($obj_id < 1) {
+            return false;
+        }
+
+        return ilObjTest::_lookupAnonymity($obj_id) === 1;
+    }
+
+    /**
+     * Tests that contribute columns and participant rows.
+     * Anonymous tests stay assigned and are omitted here.
+     *
+     * @return array<int, int[]>
+     */
+    public function getOverviewTests(bool $fromDB = false): array
+    {
+        $tests = [];
+        foreach ($this->getUniqueTests($fromDB) as $obj_id => $refs) {
+            $ref_ids = array_values(array_map('intval', (array) $refs));
+            $ref_id = $ref_ids[0] ?? 0;
+            if ($ref_id > 0 && self::isAnonymousTest($ref_id)) {
+                continue;
+            }
+            $tests[(int) $obj_id] = $ref_ids;
+        }
+
+        return $tests;
     }
 
     public function getTestReferences(bool $fromDB = false): array

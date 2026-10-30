@@ -158,7 +158,6 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
     protected function showContent(): void
     {
         $this->tabs->activateTab("content");
-        $this->pruneMembershipScope();
 
         $mapper = new ilOverviewMapper();
         $groups = $mapper->getGroupPairs($this->getObject()->getId(), $this->object->getRefId());
@@ -401,10 +400,21 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
             if (! isset($post['membership_ids'])) {
                 $post['membership_ids'] = array();
             }
+            if (!is_array($post['membership_ids'])) {
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->lng->txt('no_permission'), true);
+                $this->ctrl->redirect($this, 'editSettings');
+                return;
+            }
 
             /* Check for deleted/added IDs and execute corresponding routine. */
             $deletedIds = array_diff(array_keys($overviewGroups), $post['membership_ids']);
             $addedIds   = array_diff($post['membership_ids'], array_keys($overviewGroups));
+
+            if (!$this->postedMembershipIdsAreAuthorized($addedIds)) {
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->lng->txt('no_permission'), true);
+                $this->ctrl->redirect($this, 'editSettings');
+                return;
+            }
 
             foreach ($deletedIds as $groupId) {
                 $this->object->rmGroup($groupId);
@@ -426,9 +436,12 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $this->initSettingsForm();
         $this->populateSettings();
         $post = $this->request->getParsedBody();
-        if (isset($post['membership_ids'])) {
-            /* Executing the registered test retrieval again with the same filters
-               allows to determine which tests are really removed. */
+        if (isset($post['membership_ids']) && is_array($post['membership_ids'])) {
+            if (!$this->postedMembershipIdsAreAuthorized($post['membership_ids'])) {
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->lng->txt('no_permission'), true);
+                $this->ctrl->redirect($this, 'editSettings');
+                return;
+            }
 
             foreach ($post['membership_ids'] as $groupId) {
                 $this->object->addGroup($groupId);
@@ -601,6 +614,26 @@ class ilObjTestOverviewGUI extends ilObjectPluginGUI implements ilDesktopItemHan
         $testList = new ilTestListTableGUI($this, 'editSettings');
         $testList->setMapper(new ilTestMapper())->populate();
         return $testList;
+    }
+
+    /**
+     * Every posted id must be a live in-scope course or group the caller may list members of.
+     * One invalid id rejects the whole mutation.
+     *
+     * @param array $ids
+     */
+    private function postedMembershipIdsAreAuthorized(array $ids): bool
+    {
+        foreach ($ids as $id) {
+            if (!is_scalar($id) || !preg_match('/^[1-9][0-9]*$/', (string) $id)) {
+                return false;
+            }
+            if (!$this->object->isAuthorizedParticipantSource((int) $id)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function getMembershipList(): \ilMembershipListTableGUI

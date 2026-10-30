@@ -50,6 +50,19 @@ class ilTestOverviewData
         }
     }
 
+    /**
+     * Result values and participation state are readable for the viewer.
+     * Statistics or write covers every row. Test read covers only the viewer's own row.
+     */
+    public function mayReadParticipantResult(int $obj_id, int $member_id, int $viewer_id): bool
+    {
+        if ($this->permissionsAccessIndex[$obj_id]) {
+            return true;
+        }
+
+        return $viewer_id === $member_id && (bool) $this->permissionsReadIndex[$obj_id];
+    }
+
     public function getValidRefIdForAccess(int $obj_id): ?int
     {
         return $this->permissionsAccessIndex[$obj_id] ?: $this->permissionsReadIndex[$obj_id] ?: null;
@@ -61,7 +74,7 @@ class ilTestOverviewData
         $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_lastname');
         $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_login');
 
-        foreach($this->TestOverviewObject->getUniqueTests() as $obj_id => $refs) {
+        foreach($this->TestOverviewObject->getOverviewTests() as $obj_id => $refs) {
             $this->determineTestAccessPermissions($obj_id, $refs, $ilAccess);
 
             $title_text = $this->TestOverviewObject->getTest($obj_id)->getTitle();
@@ -126,23 +139,27 @@ class ilTestOverviewData
         $rows = $table->formatData($data);
         foreach($rows['items'] as $row) {
             $user = $row;
-            $member_id = $row->getId();
+            $member_id = (int) $row->getId();
             $results = array();
 
             $max_points = 0;
             $reached_points = 0;
             $row_data = [];
-            foreach ($this->TestOverviewObject->getUniqueTests() as $obj_id => $refs) {
+            global $ilUser;
+            $viewer_id = (int) $ilUser->getId();
+            foreach ($this->TestOverviewObject->getOverviewTests() as $obj_id => $refs) {
                 $test = $this->TestOverviewObject->getTest($obj_id);
+                if (!$this->mayReadParticipantResult($obj_id, $member_id, $viewer_id)) {
+                    $row_data[] = " ";
+                    continue;
+                }
+
                 $activeId = $test->getActiveIdOfUser($member_id);
                 if ($activeId === null) {
                     $row_data[] = "##no-result##";
                 } else {
-                    $testResult = null;
-                    global $ilUser;
                     $testResult = $test->getTestResult($activeId);
-                    if ($this->permissionsAccessIndex[$obj_id] || ($this->permissionsReadIndex[$obj_id] && $ilUser->getId() == $member_id)) {
-                        if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
+                    if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
                             $max_points = $max_points + $testResult['pass']['total_max_points'];
                             $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
                             if ($this->TestOverviewObject->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
@@ -160,9 +177,6 @@ class ilTestOverviewData
                             $row_data[] = " ";
                             $results[] = 0;
                         }
-                    } else {
-                        $row_data[] = " ";
-                    }
                 }
             }
 

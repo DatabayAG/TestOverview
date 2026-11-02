@@ -43,7 +43,7 @@ class ilTestListTableGUI extends ilMappedTableGUI
          *	@var ilCtrl $ilCtrl
          *  @var ilTree $tree
          */
-        global $ilCtrl, $tree;
+        global $ilCtrl, $tree, $tpl;
         global $DIC;
         $this->tree = $tree;
         $this->request = $DIC->http()->request();
@@ -75,6 +75,7 @@ class ilTestListTableGUI extends ilMappedTableGUI
 
         //$plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'TestOverview');
         $this->setRowTemplate('tpl.simple_object_row.html', 'public/Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview');
+        $tpl->addCss('./Customizing/global/plugins/Services/Repository/RepositoryObject/TestOverview/templates/css/testoverview.css');
 
         $this->addColumn($this->lng->txt(''), '', '1px', true);
         $this->addColumn('#', 'ordering', '20px');
@@ -135,6 +136,14 @@ class ilTestListTableGUI extends ilMappedTableGUI
         $this->tpl->setVariable('VAL_ORDERING', (int)$item->ordering);
         $this->tpl->setVariable('OBJECT_TITLE', $item->title);
         $this->tpl->setVariable('OBJECT_INFO', $this->getTestPath($item));
+        if (ilObjTestOverview::isAnonymousTest((int) $item->ref_id)) {
+            $this->tpl->setCurrentBlock('anonymous_notice');
+            $this->tpl->setVariable(
+                'ANONYMOUS_NOTICE',
+                $this->lng->txt('rep_robj_xtov_test_list_anonymous_notice')
+            );
+            $this->tpl->parseCurrentBlock();
+        }
     }
 
     /**

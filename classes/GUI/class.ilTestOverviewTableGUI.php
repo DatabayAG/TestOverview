@@ -104,7 +104,7 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         $this->export_header_data[] = $this->lng->txt('rep_robj_xtov_test_overview_hdr_login');
 
         // --
-        foreach($this->overview->getUniqueTests() as $obj_id => $refs) {
+        foreach($this->overview->getOverviewTests() as $obj_id => $refs) {
 
             $this->to_data->determineTestAccessPermissions($obj_id, $refs, $ilAccess);
 
@@ -219,9 +219,23 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         $max_points = 0;
         $reached_points = 0;
         $row_data = [];
-        foreach ($overview->getUniqueTests() as $obj_id => $refs) {
+        global $ilUser;
+        $viewer_id = (int) $ilUser->getId();
+        foreach ($overview->getOverviewTests() as $obj_id => $refs) {
             $test = $overview->getTest($obj_id);
-            $activeId  = $test->getActiveIdOfUser($row['member_id']);
+            $member_id = (int) $row['member_id'];
+            if (!$this->to_data->mayReadParticipantResult($obj_id, $member_id, $viewer_id)) {
+                $this->populateNoLinkCell(
+                    $this->lng->txt("rep_robj_xtov_overview_test_no_permission"),
+                    $this->getCSSByTestResult(null)
+                );
+                $row_data[] = " ";
+                $this->tpl->setCurrentBlock('cell');
+                $this->tpl->parseCurrentBlock();
+                continue;
+            }
+
+            $activeId  = $test->getActiveIdOfUser($member_id);
             if($activeId === null) {
                 $this->populateNoLinkCell(
                     '&nbsp;',
@@ -231,11 +245,8 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
                 $this->tpl->parseCurrentBlock();
                 $row_data[] = "##no-result##";
             } else {
-                $testResult = null;
-                global $ilUser;
                 $testResult = $test->getTestResult($activeId);
-                if ($this->to_data->permissionsAccessIndex[$obj_id] || ($this->to_data->permissionsReadIndex[$obj_id] && $ilUser->getId() == $row['member_id'])) {
-                    if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
+                if ($testResult !== [] && strlen($testResult['pass']['percent'])) {
                         $max_points = $max_points + $testResult['pass']['total_max_points'];
                         $reached_points = $reached_points + $testResult['pass']['total_reached_points'];
                         if ($this->parent_obj->getObject()->getResultPresentation() == ilObjTestOverview::PRESENTATION_PERCENTAGE) {
@@ -265,13 +276,6 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
                             $this->getCSSByTestResult(null)
                         );
                     }
-                } else {
-                    $this->populateNoLinkCell(
-                        $this->lng->txt("rep_robj_xtov_overview_test_no_permission"),
-                        $this->getCSSByTestResult(null)
-                    );
-                    $row_data[] = " ";
-                }
             }
             $this->tpl->setCurrentBlock('cell');
             $this->tpl->parseCurrentBlock();
@@ -333,58 +337,65 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
             'cnt' => 0
         );
 
-        if (count($this->overview->getUniqueTests()) === 0) {
+        if (count($this->overview->getOverviewTests()) === 0) {
             return $formatted;
         }
 
-        if(!$data['items']) {
-            $data['items'] = $this->getContextContainerItems();
-        }
-
-        if(!$data['items']) {
-            $formatted = $this->getMapper()->getUniqueTestParticipants($this->getFallbackTestObjIds());
-            $formatted['items'] = $this->fetchUserInformation($formatted['items']);
-            return $this->sortByFullName($formatted);
-        }
-
-        $test_obj_ids = $this->getFallbackTestObjIds();
-        if ($test_obj_ids === []) {
-            return $formatted;
-        }
-
-        $participant_data = $this->getMapper()->getUniqueTestParticipants($test_obj_ids);
-        $usr_ids = $participant_data['items'];
-
+        global $ilUser;
         $scope_obj_ids = ilTestOverviewScopeHelper::resolveScopeObjIds(
             $GLOBALS['DIC']->repositoryTree(),
-            $this->parent_obj->getRefId()
+            (int) $this->overview->getRefId()
         );
-        $membership_group_ids = $this->overview->getScopedParticipantGroupIds($scope_obj_ids);
+        $sources = $this->overview->getScopedParticipantGroupIds($scope_obj_ids);
+        if ($sources === []) {
+            foreach ($this->getContextContainerItems() as $item) {
+                $sources[] = (int) $item->obj_id;
+            }
+        }
 
-        if ($membership_group_ids !== []) {
-            $group_member_ids = array();
-            foreach ($membership_group_ids as $group_id) {
-                if (! empty($this->filter['flt_group_name'])
-                    && (int) $group_id != (int) $this->filter['flt_group_name']) {
+        $user_ids = array();
+        if ($this->viewerHasTestStatistics()) {
+            foreach ($sources as $group_id) {
+                $group_id = (int) $group_id;
+                if ($group_id < 1 || !$this->overview->isAuthorizedParticipantSource($group_id)) {
+                    continue;
+                }
+                if (!empty($this->filter['flt_group_name'])
+                    && $group_id !== (int) $this->filter['flt_group_name']) {
                     continue;
                 }
 
                 $container = new stdClass();
                 $container->obj_id = $group_id;
                 $container->type = $GLOBALS['DIC']['ilObjDataCache']->lookupType($group_id);
-
-                $participants = $this->getMembersObject($container);
-                foreach ($participants->getMembers() as $usr_id) {
-                    $group_member_ids[(int) $usr_id] = true;
+                foreach ($this->getMembersObject($container)->getMembers() as $usr_id) {
+                    $user_ids[(int) $usr_id] = (int) $usr_id;
                 }
             }
-
-            $usr_ids = array_values(array_intersect($usr_ids, array_keys($group_member_ids)));
         }
 
-        $formatted['items'] = $this->fetchUserInformation($usr_ids);
+        $self = (int) $ilUser->getId();
+        if ($self > 0) {
+            $user_ids[$self] = $self;
+        }
+
+        if ($user_ids !== []) {
+            $formatted['items'] = $this->fetchUserInformation(array_values($user_ids));
+            $formatted['cnt'] = count($formatted['items']);
+        }
 
         return $this->sortByFullName($formatted);
+    }
+
+    private function viewerHasTestStatistics(): bool
+    {
+        foreach ($this->to_data->permissionsAccessIndex->getKeys() as $obj_id) {
+            if ($this->to_data->permissionsAccessIndex[$obj_id]) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function fetchUserInformation($usr_ids): array
@@ -475,33 +486,6 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
         }
 
         return array();
-    }
-
-    private function getFallbackTestObjIds(): array
-    {
-        $obj_ids = array();
-
-        foreach ($this->to_data->permissionsAccessIndex->getKeys() as $obj_id) {
-            $ref_id = $this->to_data->permissionsAccessIndex[$obj_id];
-            if ($ref_id !== false) {
-                $obj_ids[(int) $obj_id] = (int) $obj_id;
-            }
-        }
-
-        foreach ($this->to_data->permissionsReadIndex->getKeys() as $obj_id) {
-            $ref_id = $this->to_data->permissionsReadIndex[$obj_id];
-            if ($ref_id !== false) {
-                $obj_ids[(int) $obj_id] = (int) $obj_id;
-            }
-        }
-
-        if (!$obj_ids) {
-            foreach (array_keys($this->overview->getUniqueTests()) as $obj_id) {
-                $obj_ids[(int) $obj_id] = (int) $obj_id;
-            }
-        }
-
-        return array_values($obj_ids);
     }
 
     /**

@@ -381,7 +381,7 @@ class ilObjTestOverview extends ilObjectPlugin
             return $this->participant_scope_obj_ids;
         }
 
-        $parent = $tree->getParentNodeData($overview_ref_id);
+        $parent = $this->participantScopeRootNode($overview_ref_id);
         if (!is_array($parent) || empty($parent['ref_id'])) {
             return $this->participant_scope_obj_ids;
         }
@@ -396,6 +396,31 @@ class ilObjTestOverview extends ilObjectPlugin
         $this->participant_scope_obj_ids = array_values(array_unique($ids));
 
         return $this->participant_scope_obj_ids;
+    }
+
+    /**
+     * Nearest course or group above the overview, the same container the table
+     * uses as implicit participant source. Falls back to the direct parent when
+     * the overview is not placed inside a course or group.
+     */
+    private function participantScopeRootNode(int $overview_ref_id): ?array
+    {
+        global $tree;
+
+        foreach (array_reverse((array) $tree->getPathId($overview_ref_id)) as $ref_id) {
+            $ref_id = (int) $ref_id;
+            if ($ref_id === $overview_ref_id) {
+                continue;
+            }
+            $node = $tree->getNodeData($ref_id);
+            if (is_array($node) && in_array($node['type'] ?? '', array('crs', 'grp'), true)) {
+                return $node;
+            }
+        }
+
+        $parent = $tree->getParentNodeData($overview_ref_id);
+
+        return is_array($parent) ? $parent : null;
     }
 
     /**

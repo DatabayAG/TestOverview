@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 /**
- * Resolves course/group obj_ids in scope of a TestOverview's parent container.
+ * Resolves course/group obj_ids in scope of a TestOverview.
+ * Scope root is the nearest course or group above the overview, or the direct parent.
  */
 class ilTestOverviewScopeHelper
 {
@@ -12,7 +13,7 @@ class ilTestOverviewScopeHelper
      */
     public static function resolveScopeObjIds(ilTree $tree, int $overview_ref_id): array
     {
-        $pnode = $tree->getParentNodeData($overview_ref_id);
+        $pnode = self::scopeRootNode($tree, $overview_ref_id);
         if (!is_array($pnode) || !isset($pnode['ref_id'])) {
             return [];
         }
@@ -27,6 +28,32 @@ class ilTestOverviewScopeHelper
         }
 
         return array_values(array_unique(array_filter($obj_ids)));
+    }
+
+    /**
+     * Nearest course or group above the overview. Falls back to the direct parent
+     * when the overview is not placed inside a course or group.
+     */
+    private static function scopeRootNode(ilTree $tree, int $overview_ref_id): ?array
+    {
+        if ($overview_ref_id < 1 || !$tree->isInTree($overview_ref_id)) {
+            return null;
+        }
+
+        foreach (array_reverse($tree->getPathId($overview_ref_id)) as $ref_id) {
+            $ref_id = (int) $ref_id;
+            if ($ref_id === $overview_ref_id) {
+                continue;
+            }
+            $node = $tree->getNodeData($ref_id);
+            if (is_array($node) && in_array($node['type'] ?? '', ['crs', 'grp'], true)) {
+                return $node;
+            }
+        }
+
+        $parent = $tree->getParentNodeData($overview_ref_id);
+
+        return is_array($parent) ? $parent : null;
     }
 
     /**

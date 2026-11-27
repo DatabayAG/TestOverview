@@ -914,11 +914,11 @@ class ilTestOverviewTableGUI extends ilTOMappedTableGUI
 
         $link = $ilCtrl->getLinkTargetByClass(
             array('ilobjtestgui', 'iltestevaluationgui'),
-            'outParticipantsPassDetails'
+            'showResults'
         );
 
         $link = ilUtil::appendUrlParameterString($link, "ref_id=$refId");
-        $link = ilUtil::appendUrlParameterString($link, "active_id=$activeId");
+        $link = ilUtil::appendUrlParameterString($link, "active_ids=$activeId");
 
         return $link;
     }
